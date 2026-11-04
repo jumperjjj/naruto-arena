@@ -1,10 +1,7 @@
 export default {
   async fetch(request, env) {
-    if (!env.ARENA_BACKEND_URL) {
-      return new Response('Aguardando a configuração do servidor da arena.', { status: 503 });
-    }
     const source = new URL(request.url);
-    const target = new URL(env.ARENA_BACKEND_URL);
+    const target = new URL(env.ARENA_BACKEND_URL || 'https://arena-teste-9ln6.onrender.com');
     target.pathname = source.pathname;
     target.search = source.search;
     const headers = new Headers(request.headers);
