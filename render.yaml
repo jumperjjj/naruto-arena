@@ -4,4 +4,4 @@ services:
     runtime: docker
     plan: free
     healthCheckPath: /healthz
-    autoDeployTrigger: 'off'
+    autoDeployTrigger: commit
