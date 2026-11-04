@@ -16,7 +16,9 @@ module.exports=function roomService(makeEngine,turnMs){
   state.fighters=state.fighters.map((n,i)=>i<3?n:{...n,skills:state.roster.find(c=>c.id===n.id).skills.map(s=>({...s,cooldown:0,targets:[],affordable:false}))});
   return state;
  }
- async function refresh(room){room.views=await Promise.all([0,1].map(async player=>privateView(await room.engine.call({command:'state',player}))));}
+ async function refresh(room,next,player){
+  room.views=await Promise.all([0,1].map(async seat=>privateView(seat===player?next:await room.engine.call({command:'state',player:seat}))));
+ }
  function schedule(room,preserveDeadline=false){
   clearTimeout(room.timer);room.deadline=room.stage==='playing'?(preserveDeadline?room.deadline:Date.now()+turnMs):0;
   if(!room.deadline)return;
@@ -27,11 +29,12 @@ module.exports=function roomService(makeEngine,turnMs){
    const next=await room.engine.call({command:'humanTurn',player,moves:[],payment:[]});
    if(next.error)throw Error(next.error);
    room.notice='Tempo esgotado: '+room.seats[player].name+' passou sem ações.';
-   await changed(room,next);
+   await changed(room,next,player);
   }).catch(e=>console.error('Sala:',e.message)),Math.max(0,room.deadline-Date.now())+10);
  }
- async function changed(room,next,resetClock=true){
-  room.revision++;if(next.winner)room.stage='finished';await refresh(room);schedule(room,!resetClock);
+ async function changed(room,next,player,resetClock=true){
+  await refresh(room,next,player);
+  room.revision++;if(next.winner)room.stage='finished';schedule(room,!resetClock);
  }
  async function view(room,session){
   let state;
@@ -45,7 +48,7 @@ module.exports=function roomService(makeEngine,turnMs){
  async function leave(room,session){
   const seat=room.seats.findIndex(s=>s?.session===session);
   if(room.stage==='playing'){
-   const next=await room.engine.call({command:'surrender',player:seat});await changed(room,next);
+   const next=await room.engine.call({command:'surrender',player:seat});await changed(room,next,seat);
   }
   room.seats[seat].left=true;session.roomCode=null;
   if(room.stage==='waiting'||room.seats.every(s=>!s||s.left)){
@@ -96,7 +99,7 @@ module.exports=function roomService(makeEngine,turnMs){
    try{
     const next=await room.engine.call({command:'humanReset',team:other.team,opponentTeam:team});
     if(next.error)error(next.error);
-    await changed(room,next);
+    await changed(room,next,0);
    }catch(e){room.engine.close();throw e;}
    rooms.set(code,room);
    other.session.roomCode=code;session.roomCode=code;
@@ -140,7 +143,10 @@ module.exports=function roomService(makeEngine,turnMs){
   const room=ownRoom(session);
   return locked(room,async()=>{
    const seat=room.seats.findIndex(s=>s?.session===session);
-   if(data.command==='state')return view(room,session);
+   if(data.command==='state'){
+    if(data.revision===1000000+room.revision)return {revision:data.revision,deadline:room.deadline};
+    return view(room,session);
+   }
    if(data.command==='leave')return leave(room,session);
    if(data.command==='ready'){
     if(room.stage!=='waiting')error('A partida já começou.');
@@ -150,7 +156,7 @@ module.exports=function roomService(makeEngine,turnMs){
     if(room.seats.every(s=>s?.ready)){
      room.engine=makeEngine();
      const next=await room.engine.call({command:'humanReset',team:room.seats[0].team,opponentTeam:room.seats[1].team});
-     if(next.error)error(next.error);room.stage='playing';room.notice='';await changed(room,next);
+     if(next.error)error(next.error);room.stage='playing';room.notice='';await changed(room,next,0);
     }
     return view(room,session);
    }
@@ -165,7 +171,7 @@ module.exports=function roomService(makeEngine,turnMs){
    }
    const command={turn:'humanTurn',exchange:'humanExchange',surrender:'surrender'}[data.command];
    const next=await room.engine.call({command,player:seat,moves:data.moves,payment:data.payment,exchangeTo:data.exchangeTo});
-   if(next.error)error(next.error);room.notice='';await changed(room,next,data.command!=='exchange');return view(room,session);
+   if(next.error)error(next.error);room.notice='';await changed(room,next,seat,data.command!=='exchange');return view(room,session);
   });
  }
  const cleanup=setInterval(()=>{for(const [key,request] of requests)if(request.expires<=Date.now())requests.delete(key);for(const [code,room]of rooms)if(Date.now()-room.used>30*60*1000){clearTimeout(room.timer);room.engine?.close();for(const s of room.seats)if(s)s.session.roomCode=null;rooms.delete(code);}},60000);cleanup.unref();

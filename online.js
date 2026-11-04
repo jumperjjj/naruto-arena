@@ -5,7 +5,7 @@ const invitedCode=new URLSearchParams(location.search).get('sala');let inviteHan
 async function roomRequest(command,extra={}){const r=await fetch('/room-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command,...extra})});const next=await r.json();if(next.error)throw Error(next.error.replace(/^user error \(|\)$/g,''));return next;}
 const cpuApi=api;
 api=async function(command,extra={}){
- if(command==='state')return roomRequest('state');
+ if(command==='state')return roomRequest('state',extra);
  if(state?.online){const mapped={reset:'ready',lobby:'leave'}[command]||command;return roomRequest(mapped,{round:state.round,...extra});}
  return cpuApi(command,extra);
 };
@@ -76,6 +76,12 @@ const matchDialog=document.createElement('dialog');
 matchDialog.id='matchDialog';
 matchDialog.innerHTML='<form method="dialog"><h2>START PRIVATE GAME</h2><p id="matchOwnNick"></p><label for="opponentNick">Nick do adversário</label><input id="opponentNick" maxlength="20" autocomplete="off" required><p>Seu adversário precisa digitar o seu nick também.</p><p id="matchStatus" role="status"></p><button id="startSearch" type="submit">PROCURAR PARTIDA</button><button id="cancelSearch" type="button">CANCELAR</button></form>';
 $('arena').append(matchDialog);
+const searchEye=document.createElement('div');
+searchEye.className='matchSharingan';
+searchEye.hidden=true;
+searchEye.setAttribute('aria-hidden','true');
+searchEye.innerHTML='<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#a30c18" stroke="#1c0a0b" stroke-width="6"/><circle cx="50" cy="50" r="29" fill="none" stroke="#401217" stroke-width="2"/><circle cx="50" cy="50" r="10" fill="#1c0a0b"/><path id="matchTomoe" d="M43 24c0-11 13-12 17-5-6-3-8 1-6 5 3 7-11 10-11 0Z" fill="#1c0a0b"/><use href="#matchTomoe" transform="rotate(120 50 50)"/><use href="#matchTomoe" transform="rotate(240 50 50)"/></svg>';
+matchDialog.querySelector('h2').after(searchEye);
 for(const dialog of [nickDialog,matchDialog])dialog.className='nickMatchDialog';
 const savedNick=()=>localStorage.getItem('narutoNickname')||'';
 const validNick=value=>/^[\p{L}\p{N}_-]{1,20}$/u.test(value);
@@ -116,6 +122,7 @@ nickDialog.querySelector('form').onsubmit=async event=>{
  if(returnToSearch)showMatch(returnToSearch);else renderLobby();
 };
 function searchControls(searching){
+ searchEye.hidden=!searching;
  $('startSearch').disabled=searching;$('opponentNick').disabled=searching;
 }
 function acceptMatch(next){

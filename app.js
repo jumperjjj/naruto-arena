@@ -22,7 +22,28 @@ document.addEventListener('click',e=>{if(!state)return;const fx=e.target.closest
 let paymentMode='turn',payment=[0,0,0,0],paymentPool={},paymentRequired=0,exchangeColor=0,paymentRound=0;
 function openPayment(mode){paymentMode=mode;paymentRound=state.round;payment=[0,0,0,0];exchangeColor=0;const r=reserved();paymentPool=mode==='turn'?r.pool:{...state.energy};paymentRequired=mode==='turn'?r.generic:5;$('overlay').hidden=false;$('paymentError').textContent='';drawPayment();$('closePayment').focus();}
 function drawPayment(){const total=payment.reduce((s,n)=>s+n,0);$('paymentNotice').hidden=paymentMode==='turn';$('paymentNotice').textContent=paymentMode==='exchange'?(lang==='pt'?'Troque 5 energias guardadas por 1 da cor escolhida.':'Exchange 5 saved energy for 1 chosen color.'):(lang==='pt'?`Estoque: ${keys.reduce((n,k)=>n+state.energy[k],0)}. Este turno usa ${costs().rand} genérica(s). A energia que sobrar fica guardada.`:`Pool: ${keys.reduce((n,k)=>n+state.energy[k],0)}. This turn uses ${costs().rand} random energy. Unspent energy stays in your pool.`);$('paymentSkills').title=lang==='pt'?'Execução da esquerda para a direita. Arraste os ícones para mudar a ordem.':'Actions execute left to right. Drag icons to reorder.';$('paymentTitle').innerHTML=`${t('choose')} <em>${paymentRequired-total}</em> ${t('random')}`;$('paymentGrid').innerHTML=`<div class="paymentHeader"><span>${t('left')}</span><span>${t('spend')}</span></div>`+keys.map((k,i)=>`<div class="paymentRow"><span class="kind">${orb(k)} ${label(k)}</span><span class="leftNum">${paymentPool[k]-payment[i]}</span><button data-payment="${i}" data-step="-1" aria-label="Diminuir ${label(k)}" ${payment[i]?'':'disabled'}>−</button><button data-payment="${i}" data-step="1" aria-label="Aumentar ${label(k)}" ${total<paymentRequired&&payment[i]<paymentPool[k]?'':'disabled'}>+</button><span class="kind rightKind">${orb(k)} ${label(k)}</span><span class="spentNum">${payment[i]}</span></div>`).join('');if(paymentMode==='turn'&&paymentRequired===0){$('paymentTitle').textContent=queue.length?(lang==='pt'?'CONFIRMAR AÇÕES · SEM CUSTO GENÉRICO':'CONFIRM ACTIONS · NO RANDOM COST'):(lang==='pt'?'PASSAR TURNO E GUARDAR ENERGIA':'PASS TURN AND SAVE ENERGY');$('paymentNotice').textContent=lang==='pt'?(queue.length?'Estas ações não exigem distribuir energia genérica. Os custos fixos já estão reservados.':'Nenhuma habilidade preparada: você não gasta energia. O estoque permanece guardado.'):(queue.length?'These actions require no random energy. Fixed costs are already reserved.':'No skills queued: you spend no energy. The pool remains saved.');}$('paymentSkills').innerHTML=paymentMode==='turn'?queue.map((m,i)=>`<div class="queueSkill" draggable="true" data-order="${i}" role="listitem" aria-label="${i+1}: ${esc(nameOf(state.fighters[m.actor].skills[m.skill].name))}"><img draggable="false" src="${picture(state.fighters[m.actor],state.fighters[m.actor].skills[m.skill])}" title="${esc(nameOf(state.fighters[m.actor].skills[m.skill].name))}" alt="${esc(nameOf(state.fighters[m.actor].skills[m.skill].name))}"></div>`).join(''):'';$('confirmPayment').disabled=busy||total!==paymentRequired;$('exchangeChoice').innerHTML=paymentMode==='exchange'?`<label>${lang==='pt'?'Receber':'Receive'}: <select id="receiveColor">${keys.map((k,i)=>`<option value="${i}">${label(k)}</option>`).join('')}</select></label>`:'';if($('receiveColor')){$('receiveColor').value=String(exchangeColor);$('receiveColor').onchange=e=>exchangeColor=+e.target.value;}}
-async function submitTurn(spending){if(busy)return;busy=true;selected=null;render();try{state=await api('turn',{moves:queue,payment:spending,round:state.round});queue=[];viewed=null;revision=state.revision;message(state.winner||t('newTurn'));}catch(e){message(e.message);}finally{busy=false;render();}}
+const renderBattleWithHp=render;
+let displayedBattle;
+render=function(){
+ if(!state)return;
+ const sameBattle=displayedBattle?.started&&state.started&&displayedBattle.code===state.online?.code&&displayedBattle.round<=state.round;
+ const hpBars=()=>[...document.querySelectorAll('#allies .hp i, #enemies .hp i')];
+ const oldWidths=sameBattle?hpBars().map(bar=>bar.parentElement.clientWidth
+  ? 100*parseFloat(getComputedStyle(bar).width)/bar.parentElement.clientWidth
+  : null):[];
+ const previousFighters=displayedBattle?.fighters;
+ renderBattleWithHp();
+ if(sameBattle&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+  hpBars().forEach((bar,index)=>{
+   const fighter=state.fighters[index],from=oldWidths[index],to=parseFloat(bar.style.width);
+   if(fighter?.id===previousFighters[index]?.id&&Number.isFinite(from)&&Math.abs(from-to)>.5){
+    bar.animate([{width:from+'%'},{width:to+'%'}],{duration:420,easing:'ease-out'});
+   }
+  });
+ }
+ displayedBattle={started:state.started,code:state.online?.code,round:state.round,fighters:state.fighters};
+};
+async function submitTurn(spending){if(busy)return;busy=true;selected=null;$('endTurn').disabled=true;$('exchangeButton').disabled=true;$('readyLabel').textContent=t('resolving');try{state=await api('turn',{moves:queue,payment:spending,round:state.round});queue=[];viewed=null;revision=state.revision;message(state.winner||t('newTurn'));}catch(e){message(e.message);}finally{busy=false;render();}}
 function nativePayment(){return ['blood','gen','nin','tai'].map(k=>payment[keys.indexOf(k)]);}
 function autoPayment(){const {pool,generic}=reserved(),p={blood:0,gen:0,nin:0,tai:0};let left=generic;while(left>0){const k=keys.filter(k=>pool[k]>0).sort((a,b)=>pool[b]-pool[a])[0];if(!k)throw Error(t('insufficient'));p[k]++;pool[k]--;left--;}return ['blood','gen','nin','tai'].map(k=>p[k]);}
 $('endTurn').onclick=()=>{if(busy||!state||state.winner||state.yourTurn===false)return;if(!reserved().generic)return submitTurn([0,0,0,0]);if($('autoEnergy').checked)return submitTurn(autoPayment());openPayment('turn');};
@@ -34,7 +55,19 @@ $('teamButton').onclick=()=>{chosen=state.fighters.slice(0,3).map(n=>n.id).filte
 $('journalButton').onclick=()=>$('journalDialog').showModal();$('closeJournal').onclick=()=>$('journalDialog').close();$('settingsButton').onclick=()=>{$('autoEnergy').focus();message(lang==='pt'?'Marque Energia automática para distribuir os custos genéricos ao confirmar o turno.':'Enable Auto energy to distribute random costs when confirming your turn.');};
 function fit(){const available=Math.min((window.innerWidth-16)/770,(window.innerHeight-26)/560);const scale=zoom==='fit'?Math.max(.1,Math.min(2.5,available)):Math.max(.1,Math.min(zoom,available));$('arena').style.transform=`scale(${scale})`;$('arena').style.transformOrigin='top left';$('gameWindow').style.width=770*scale+'px';$('gameWindow').style.height=560*scale+'px';$('scaleButton').textContent=(zoom==='fit'?(lang==='pt'?'Ajustar':'Fit')+' · ':'')+Math.round(scale*100)+'%';}window.addEventListener('resize',fit);$('scaleButton').onclick=()=>{zoom=zoom==='fit'?1:zoom===1?1.5:'fit';fit();};fit();
 function tick(){if(!state)return;const remain=Math.max(0,state.deadline-Date.now());$('timerFill').style.width=(state.winner?0:Math.min(100,remain/(state.turnSeconds*1000||60000)*100))+'%';$('timerFill').classList.toggle('urgent',remain<15000);$('endTurn').title=Math.ceil(remain/1000)+'s';$('timerSeconds').textContent=state.winner?'':Math.ceil(remain/1000)+'s';}
-setInterval(tick,200);let polling=false;setInterval(async()=>{if(!state||busy||polling)return;polling=true;try{const next=await api('state');if(next.revision!==revision){state=next;revision=next.revision;queue=[];selected=null;viewed=null;$('overlay').hidden=true;render();message(state.winner||state.notice||t('newTurn'));}else state.deadline=next.deadline;}catch{}finally{polling=false;}},1200);
+setInterval(tick,200);
+let polling=false,lastPoll=0;
+setInterval(async()=>{
+ if(!state||busy||polling||Date.now()-lastPoll<(state.online?.stage==='playing'?550:1150))return;
+ polling=true;lastPoll=Date.now();
+ const previous=state;
+ try{
+  const next=await api('state',state.online?{revision}:{});
+  if(busy||state!==previous)return;
+  if(next.revision!==revision){state=next;revision=next.revision;queue=[];selected=null;viewed=null;$('overlay').hidden=true;render();message(state.winner||state.notice||t('newTurn'));}
+  else state.deadline=next.deadline;
+ }catch{}finally{polling=false;}
+},600);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('overlay').hidden)$('overlay').hidden=true;else{selected=null;render();}}});
 applyLanguage();(async()=>{try{[images,ptBr]=await Promise.all([fetch('/images.json').then(r=>r.json()),fetch('/pt-br.json').then(r=>r.ok?r.json():{}).catch(()=>({}))]);const rawSandbox=sessionStorage.getItem('narutoSandboxMatch');
 if(new URLSearchParams(location.search).has('sandbox')&&rawSandbox){

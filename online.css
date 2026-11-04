@@ -23,3 +23,7 @@
 .nickMatchDialog input{width:100%;padding:6px;border:1px solid #867456;background:#fff7df;color:inherit}
 .nickMatchDialog button{margin:5px 6px 0 0;padding:6px 9px}
 .nickMatchDialog::backdrop{background:#140a0570}
+.matchSharingan{width:76px;height:76px;margin:8px auto 12px}
+.matchSharingan svg{display:block;width:100%;height:100%;animation:matchSharinganSpin 1.4s linear infinite}
+@keyframes matchSharinganSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.matchSharingan svg{animation:none}}
