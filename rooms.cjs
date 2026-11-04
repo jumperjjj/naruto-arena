@@ -3,6 +3,7 @@ const {randomBytes}=require('node:crypto');
 module.exports=function roomService(makeEngine,turnMs){
  const rooms=new Map();
  const requests=new Map();
+ const nicknames=new Map();
  let matching=Promise.resolve();
  const error=msg=>{throw new Error(msg)};
  const nickname=value=>String(value||'Jogador').replace(/[\r\n\t]/g,' ').trim().slice(0,20)||'Jogador';
@@ -58,19 +59,37 @@ module.exports=function roomService(makeEngine,turnMs){
   if(!/^[\p{L}\p{N}_-]{1,20}$/u.test(name))error('Use de 1 a 20 letras, números, hífens ou sublinhados no nick.');
   return {name,key:name.toLowerCase()};
  }
+ function clearSearch(session){
+  if(session.nick)requests.delete(session.nick.key);
+ }
+ function release(session){
+  clearSearch(session);
+  if(session.nick)nicknames.delete(session.nick.key);
+  session.nick=null;
+ }
+ function reserveNick(session,nick){
+  const owner=nicknames.get(nick.key);
+  if(owner&&owner!==session)error('Esse nick já está em uso em outro aparelho. Escolha outro.');
+  if(session.roomCode&&session.nick?.key!==nick.key)error('Saia da partida antes de trocar de nick.');
+  if(session.nick?.key!==nick.key){release(session);nicknames.set(nick.key,session);}
+  session.nick=nick;
+  return {nickname:nick.name};
+ }
  async function match(data,session){
   if(session.roomCode)return view(ownRoom(session),session);
-  const nick=matchNick(data.nickname),opponent=matchNick(data.opponent);
-  if(nick.key===opponent.key)error('Digite um nick diferente do seu.');
+  const nick=matchNick(data.nickname),quick=data.command==='quickMatch';
+  const opponent=quick?null:matchNick(data.opponent);
+  if(nick.key===opponent?.key)error('Digite um nick diferente do seu.');
   const current=await session.transact({command:'state'});
   if(current.started&&!current.winner)error('Encerre a partida atual antes de procurar outra.');
   const team=data.team;
   if(!Array.isArray(team)||team.length!==3||new Set(team).size!==3||team.some(id=>!current.roster.some(c=>c.id===id)))error('Escolha três personagens diferentes.');
   for(const [key,request] of requests)if(request.expires<=Date.now())requests.delete(key);
-  const existing=requests.get(nick.key);
-  if(existing&&existing.session!==session)error('Esse nick já está procurando partida. Escolha outro.');
-  const other=requests.get(opponent.key);
-  if(other?.opponent===nick.key&&other.session!==session&&!other.session.roomCode){
+  reserveNick(session,nick);
+  const other=quick
+   ? [...requests.values()].find(request=>request.quick&&request.session!==session&&!request.session.roomCode)
+   : requests.get(opponent.key);
+  if(other&&other.session!==session&&!other.session.roomCode&&(quick||other.opponent===nick.key)){
    if(rooms.size>=8)error('As salas de teste estão ocupadas. Tente novamente mais tarde.');
    const code=randomBytes(5).toString('hex').toUpperCase();
    const room={code,seats:[other,{session,name:nick.name,team,ready:true,left:false}],stage:'playing',revision:1,serial:Promise.resolve(),used:Date.now(),deadline:0,notice:'',engine:makeEngine()};
@@ -84,16 +103,17 @@ module.exports=function roomService(makeEngine,turnMs){
    requests.delete(other.key);requests.delete(nick.key);
    return view(room,session);
   }
-  for(const [key,request] of requests)if(request.session===session)requests.delete(key);
-  requests.set(nick.key,{...nick,opponent:opponent.key,session,team,ready:true,left:false,expires:Date.now()+120000});
+  clearSearch(session);
+  requests.set(nick.key,{...nick,quick,opponent:opponent?.key,session,team,ready:true,left:false,expires:Date.now()+120000});
   return {...current,online:null,searching:true};
  }
  async function run(data,session){
-  if(['match','cancelMatch'].includes(data.command)){
+  if(['match','quickMatch','cancelMatch','claimNick'].includes(data.command)){
    const task=matching.then(()=>{
-    if(data.command==='match')return match(data,session);
+    if(data.command==='claimNick')return reserveNick(session,matchNick(data.nickname));
+    if(data.command!=='cancelMatch')return match(data,session);
     if(session.roomCode)return view(ownRoom(session),session);
-    for(const [key,request] of requests)if(request.session===session)requests.delete(key);
+    clearSearch(session);
     return {searching:false};
    });
    matching=task.catch(()=>{});
@@ -149,9 +169,9 @@ module.exports=function roomService(makeEngine,turnMs){
   });
  }
  const cleanup=setInterval(()=>{for(const [key,request] of requests)if(request.expires<=Date.now())requests.delete(key);for(const [code,room]of rooms)if(Date.now()-room.used>30*60*1000){clearTimeout(room.timer);room.engine?.close();for(const s of room.seats)if(s)s.session.roomCode=null;rooms.delete(code);}},60000);cleanup.unref();
- return {handle(data,session){
+ return {release,handle(data,session){
   const now=Date.now();if(!session.roomRate||now-session.roomRate.at>60000)session.roomRate={at:now,count:0};if(++session.roomRate.count>180)return Promise.reject(Error('Muitas requisições. Aguarde um momento.'));
-  if(['join','create','match'].includes(data.command)){if(!session.joinRate||now-session.joinRate.at>60000)session.joinRate={at:now,count:0};if(++session.joinRate.count>12)return Promise.reject(Error('Muitas tentativas de entrada. Aguarde um minuto.'));}
+  if(['join','create','match','quickMatch','claimNick'].includes(data.command)){if(!session.joinRate||now-session.joinRate.at>60000)session.joinRate={at:now,count:0};if(++session.joinRate.count>12)return Promise.reject(Error('Muitas tentativas de entrada. Aguarde um minuto.'));}
   const task=(session.roomSerial||Promise.resolve()).then(()=>run(data,session));session.roomSerial=task.catch(()=>{});return task;
  },close(){clearInterval(cleanup);for(const room of rooms.values()){clearTimeout(room.timer);room.engine?.close();}}};
 };

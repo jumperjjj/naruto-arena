@@ -79,24 +79,41 @@ $('arena').append(matchDialog);
 for(const dialog of [nickDialog,matchDialog])dialog.className='nickMatchDialog';
 const savedNick=()=>localStorage.getItem('narutoNickname')||'';
 const validNick=value=>/^[\p{L}\p{N}_-]{1,20}$/u.test(value);
-let returnToSearch=false,searchTimer;
+let returnToSearch=null,searchTimer,searchMode='private';
 function showNick(forMatch=false){
  returnToSearch=forMatch;$('playerNick').value=savedNick();$('nickStatus').textContent='';nickDialog.showModal();
 }
-function showPrivateMatch(){
+function showMatch(mode){
  if(state?.online){showOnline();return;}
  if(selectedTeam().length!==3){$('lobbyNotice').textContent='Escolha três personagens diferentes.';return;}
- if(!validNick(savedNick())){showNick(true);return;}
+ if(!validNick(savedNick())){showNick(mode);return;}
+ searchMode=mode;
+ const quick=mode==='quick';
+ matchDialog.querySelector('h2').textContent=quick?'START QUICK GAME':'START PRIVATE GAME';
+ $('opponentNick').required=!quick;
+ $('opponentNick').hidden=quick;
+ matchDialog.querySelector('label').hidden=quick;
+ $('opponentNick').nextElementSibling.hidden=quick;
+ $('startSearch').hidden=quick;
  $('matchOwnNick').textContent='Seu nick: '+savedNick();
  $('matchStatus').textContent='';matchDialog.showModal();
+ if(quick)startMatchSearch();
 }
+function showPrivateMatch(){showMatch('private');}
 roomButton.onclick=()=>showNick();
 $('closeNick').onclick=()=>nickDialog.close();
-nickDialog.querySelector('form').onsubmit=event=>{
+nickDialog.querySelector('form').onsubmit=async event=>{
  event.preventDefault();
+ if(onlineWorking)return;
  const name=$('playerNick').value.normalize('NFKC').trim();
  if(!validNick(name)){$('nickStatus').textContent='Digite um nick válido.';return;}
- localStorage.setItem('narutoNickname',name);nickDialog.close();if(returnToSearch)showPrivateMatch();
+ onlineWorking=true;$('nickStatus').textContent='Reservando nick…';
+ try{
+  await roomRequest('claimNick',{nickname:name});
+  localStorage.setItem('narutoNickname',name);nickDialog.close();
+ }catch(e){$('nickStatus').textContent=e.message;return;}
+ finally{onlineWorking=false;}
+ if(returnToSearch)showMatch(returnToSearch);else renderLobby();
 };
 function searchControls(searching){
  $('startSearch').disabled=searching;$('opponentNick').disabled=searching;
@@ -106,17 +123,18 @@ function acceptMatch(next){
  state=next;revision=next.revision;queue=[];selected=null;viewed=null;lobbyReady=false;lobbyPreviewOpen7=false;
  render();
 }
-matchDialog.querySelector('form').onsubmit=async event=>{
- event.preventDefault();if(onlineWorking)return;
+async function startMatchSearch(){
+ if(onlineWorking)return;
  onlineWorking=true;busy=true;searchControls(true);$('cancelSearch').disabled=true;$('matchStatus').textContent='Conectando ao servidor…';
  try{
-  const next=await roomRequest('match',{nickname:savedNick(),opponent:$('opponentNick').value,team:selectedTeam()});
+  const next=await roomRequest(searchMode==='quick'?'quickMatch':'match',{nickname:savedNick(),opponent:$('opponentNick').value,team:selectedTeam()});
   if(next.online){acceptMatch(next);return;}
-  $('matchStatus').textContent='Aguardando o adversário procurar pelo seu nick…';
+  $('matchStatus').textContent=searchMode==='quick'?'Na fila. Aguardando outro jogador…':'Aguardando o adversário procurar pelo seu nick…';
   searchTimer=setTimeout(()=>{searchControls(false);$('matchStatus').textContent='A busca expirou. Tente novamente.';},120000);
  }catch(e){searchControls(false);$('matchStatus').textContent=e.message;}
  finally{onlineWorking=false;busy=false;$('cancelSearch').disabled=false;if(state?.online)render();}
-};
+}
+matchDialog.querySelector('form').onsubmit=event=>{event.preventDefault();startMatchSearch();};
 async function cancelPrivateSearch(){
  if(onlineWorking)return;
  if(!$('startSearch').disabled){matchDialog.close();return;}

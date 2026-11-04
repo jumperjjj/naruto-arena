@@ -75,7 +75,7 @@ function sessionFor(req,res){
  session.lastUsed=Date.now();return session;
 }
 const sessionTimeout=(hosted?5:30)*60*1000;
-const cleanup=setInterval(()=>{for(const [id,session]of sessions)if(Date.now()-session.lastUsed>sessionTimeout){session.close();sessions.delete(id);}},60000);cleanup.unref();
+const cleanup=setInterval(()=>{for(const [id,session]of sessions)if(Date.now()-session.lastUsed>sessionTimeout){roomService.release(session);session.close();sessions.delete(id);}},60000);cleanup.unref();
 const imgRoot=path.join(__dirname,'assets');
 const normalized=s=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
 const classicCatalog=JSON.parse(fs.readFileSync(path.join(root,'classic/catalog.json'),'utf8'));

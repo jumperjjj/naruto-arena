@@ -19,6 +19,7 @@
 .nickMatchDialog h2{font-size:16px;margin:0 0 12px;color:#922b19}
 .nickMatchDialog p,.nickMatchDialog label{font-size:12px}
 .nickMatchDialog label{display:block;font-weight:bold;margin-bottom:4px}
+.nickMatchDialog [hidden]{display:none}
 .nickMatchDialog input{width:100%;padding:6px;border:1px solid #867456;background:#fff7df;color:inherit}
 .nickMatchDialog button{margin:5px 6px 0 0;padding:6px 9px}
 .nickMatchDialog::backdrop{background:#140a0570}

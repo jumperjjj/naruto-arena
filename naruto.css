@@ -109,6 +109,9 @@ body{background:#211814;margin:0}
 #startCpuButton,#privateMatch{top:225px}
 #startCpuButton{left:326px}
 #privateMatch{left:531px}
+#quickMatch{position:absolute;left:326px;top:225px;width:192px;height:57px;background:transparent url('/assets/bg/quick.png') center/contain no-repeat;border:0;color:transparent;font-size:0}
+#quickMatch:hover{filter:brightness(1.1)}
+#startCpuButton{left:125px;top:237px;width:176px;height:30px}
 .rosterPager{position:absolute;inset:0;pointer-events:none}
 .rosterPager button{position:absolute;top:76px;border:0;background:transparent;color:white;text-shadow:1px 1px 2px #20170b,-1px -1px 2px #20170b;font:bold 29px Georgia;pointer-events:auto;padding:0}
 .rosterPager button:first-child{left:32px}
