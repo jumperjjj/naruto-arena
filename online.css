@@ -1,0 +1,24 @@
+#onlineButton{color:#f1e0a9!important;border-color:#bfaa6b!important;white-space:nowrap}
+#onlineDialog{width:420px;max-width:90vw;padding:18px 22px;font-size:12px}
+#onlineDialog p{line-height:17px;margin:0 0 12px}
+#onlineDialog label{display:block;font-weight:bold;font-size:11px;margin:9px 0 5px}
+#onlineDialog input{width:100%;height:31px;border:1px solid #77764f;background:#fff6db;color:#17291d;padding:5px 7px;font-size:12px}
+#onlineDialog button{font-size:11px;min-width:110px;height:29px;border:1px solid #75613f;background:#eee2b3;color:#263222;margin-top:8px;padding:4px 8px}
+#onlineDialog button:disabled{opacity:.45}
+.joinRoom{margin-top:14px;border-top:1px solid #aca580;padding-top:3px}
+#roomCode{text-transform:uppercase;letter-spacing:2px}
+#onlineDialog #onlineError{color:#8b3429;margin:10px 0 0;min-height:17px}
+#onlineDialog #closeOnline{min-width:76px}
+#roomShare{margin-top:12px}
+#roomPanel{position:absolute;top:234px;left:3px;width:242px;height:47px;color:#eee2b7;font-size:9px;text-shadow:1px 1px #15231b}
+#roomPanel b{letter-spacing:1px;font-size:10px}
+#roomPanel button{font-size:7px;padding:3px 5px;margin-left:7px;border:1px solid #a19d72;background:#eee1b5;color:#27321d;vertical-align:middle}
+#roomPanel p{margin:5px 0 0;font-size:8px}
+#roomPanel #cancelReady{position:absolute;right:0;top:22px;font-size:6px}
+.nickMatchDialog{width:360px;max-width:90vw;padding:18px 22px;background:#f3e6c0;color:#24190e;border:2px solid #922b19}
+.nickMatchDialog h2{font-size:16px;margin:0 0 12px;color:#922b19}
+.nickMatchDialog p,.nickMatchDialog label{font-size:12px}
+.nickMatchDialog label{display:block;font-weight:bold;margin-bottom:4px}
+.nickMatchDialog input{width:100%;padding:6px;border:1px solid #867456;background:#fff7df;color:inherit}
+.nickMatchDialog button{margin:5px 6px 0 0;padding:6px 9px}
+.nickMatchDialog::backdrop{background:#140a0570}

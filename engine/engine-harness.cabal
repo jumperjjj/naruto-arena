@@ -1,0 +1,18 @@
+cabal-version: 3.0
+name: engine-harness
+version: 0.1.0.0
+build-type: Simple
+license: BSD-3-Clause
+license-file: LICENSE
+
+executable dbd-playground
+  main-is: Main.hs
+  hs-source-dirs: src, dbd
+  other-modules: Game.Characters.Classic, Game.Characters.ClassicRules, Game.Characters.ClassicMore, Game.Characters.ClassicNext, Game.Characters.ClassicFinal, DBD, Game.AI, Class.Classed, Class.Display, Class.Hook, Class.Parity, Class.Parse, Class.Play, Class.Random, Class.Stackable, Class.TurnBased, ClassyPrelude, Game.Action, Game.Action.Chakra, Game.Action.Channel, Game.Action.Combat, Game.Action.Skill, Game.Action.Status, Game.Action.Trap, Game.Characters, Game.Characters.Development, Game.Characters.Import, Game.Characters.Original, Game.Characters.Original.Exams, Game.Characters.Original.Family, Game.Characters.Original.Flashbacks, Game.Characters.Original.Kids, Game.Characters.Original.Leaders, Game.Characters.Original.Organizations, Game.Characters.Original.Teachers, Game.Characters.Original.Versions, Game.Characters.Reanimated, Game.Characters.Reanimated.Adults, Game.Characters.Reanimated.Kage, Game.Characters.Reanimated.Organizations, Game.Characters.Reanimation, Game.Characters.Shippuden, Game.Characters.Shippuden.Adults, Game.Characters.Shippuden.Akatsuki, Game.Characters.Shippuden.Jinchuriki, Game.Characters.Shippuden.Kids, Game.Characters.Shippuden.Leaders, Game.Characters.Shippuden.Organizations, Game.Characters.Shippuden.Versions, Game.Engine, Game.Engine.Chakra, Game.Engine.Combat, Game.Engine.Cooldown, Game.Engine.Counter, Game.Engine.Effects, Game.Engine.Ninjas, Game.Engine.Skills, Game.Engine.Statuses, Game.Engine.Traps, Game.Model.Attack, Game.Model.Chakras, Game.Model.Channel, Game.Model.Character, Game.Model.Class, Game.Model.Context, Game.Model.Copy, Game.Model.Destructible, Game.Model.Duration, Game.Model.Effect, Game.Model.Face, Game.Model.Game, Game.Model.Group, Game.Model.ID, Game.Model.Internal, Game.Model.Internal.Channel, Game.Model.Internal.Character, Game.Model.Internal.Copy, Game.Model.Internal.Destructible, Game.Model.Internal.Game, Game.Model.Internal.Skill, Game.Model.Internal.Status, Game.Model.Internal.Trap, Game.Model.Ninja, Game.Model.Player, Game.Model.Requirement, Game.Model.Runnable, Game.Model.Skill, Game.Model.Slot, Game.Model.Status, Game.Model.Trap, Game.Model.Trigger, NonNull, Util
+  default-language: GHC2024
+  default-extensions: NoStarIsType, NoImplicitPrelude, LexicalNegation, MultiWayIf, ParallelListComp, UnicodeSyntax, ViewPatterns, BlockArguments, TypeFamilies, DefaultSignatures, OverloadedStrings, ApplicativeDo, OverloadedRecordDot, StrictData
+  cpp-options: -DDEVELOPMENT
+  ghc-options: -O0 -threaded -rtsopts
+  build-depends: base, aeson, attoparsec, bitwise-enum, blaze-html, blaze-markup, bytestring, chunked-data, classy-prelude, containers, deepseq, mono-traversable, monad-loops, mtl, mwc-random, random, scientific, text, transformers, unordered-containers, vector, yesod-core, yesod-websockets, hspec, hspec-api, hspec-core, QuickCheck
+
+

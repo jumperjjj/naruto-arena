@@ -1,0 +1,513 @@
+module Game.Model.Effect
+  ( Amount(..)
+  , Constructor(..)
+  , Effect(..)
+  , construct
+  , helpful
+  , adjust
+  , sticky
+  , isDisable
+  , bypassEnrage
+  ) where
+
+import ClassyPrelude
+
+import Data.Aeson ((.=), ToJSON(..), object)
+import Data.Enum.Set (EnumSet)
+
+import           Class.Classed (Classed(..))
+import           Class.Display (Display(..), commas)
+import           Game.Model.Class (Class(..))
+import qualified Game.Model.Class as Class
+import           Game.Model.Slot (Slot)
+import           Util ((∈))
+
+-- | Effects of 'Game.Model.Status.Status'es.
+data Effect
+    -- | Gain chakra when targeted by skills
+    = Absorb
+    | ChakraGuard Int
+    -- | Deals damage every turn
+    | Afflict Int
+    -- | Cannot be targeted by allies
+    | Alone
+    -- | Modifies a skill to an alternate form
+    | Alternate Text Text
+    -- | Cannot be countered or reflected
+    | AntiCounter
+    -- | Adds to damage received
+    | Bleed (EnumSet Class) Amount Int
+    -- | Adds to healing 'Game.Model.Skill.Skill's
+    | Bless Int
+    -- | Treats user as 'Invulnerable'
+    | Block Slot
+    -- | Cannot affect allies
+    | BlockAllies
+    -- | Cannot affect enemies
+    | BlockEnemies
+    -- | Scales effects from allies
+    | Boost Int
+    -- | Adds to destructible defense 'Game.Model.Skill.Skill'
+    | Build Int
+    -- | All skills are 'Bypassing'
+    | Bypass
+    -- | Damage received converts to defense
+    | DamageToDefense
+    -- | Prevents applying an effect
+    | Disable Constructor
+    -- | 'Invulnerable' to everyone but user
+    | Duel Slot
+    -- | Health cannot go below 1
+    | Endure
+    -- | Ignore all harmful status effects
+    | Enrage
+    -- | 'Game.Model.Skill.Skill's cost 1 additional random chakra
+    | Exhaust (EnumSet Class)
+    -- | Cannot reduce damage or be 'Invulnerable'
+    | Expose
+    -- | Changes appearance
+    | Face
+    -- | Immune to 'Stun', 'Disable', and 'Silence'
+    | Focus
+    -- | Heals every turn
+    | Heal Int
+    -- | Invulnerable to enemy 'Game.Model.Skill.Skill's
+    | Invulnerable Class
+    -- | Limits damage received
+    | Limit Int
+    | LimitOutgoing Int
+    -- | Ignore ignores
+    | NoIgnore
+    -- | Invulnerable but targetable
+    | Nullify
+    -- | Damage attacks become piercing
+    | Pierce
+    -- | Invulnerable to healing and curing
+    | Plague
+    -- | Reduces damage by an amount
+    | Reduce (EnumSet Class) Amount Int
+    -- | Transfers harmful 'Game.Model.Skill.Skill's
+    | Redirect Slot
+    -- | Reflects the first 'Game.Model.Skill.Skill'
+    | Reflect
+    -- | 'Reflect' repeatedly
+    | ReflectAll Class
+    -- | Forces AoE attacks to be single-target
+    | Restrict
+    -- | Makes 'Invisible' effects visible
+    | Reveal
+    -- | Ignores helpful status effects
+    | Seal
+    -- | Harmful skills are also applied to a target
+    | Share Slot
+    -- | Unable to cause non-damage effects
+    | Silence
+    -- | Increases cooldowns
+    | Snare Int
+    -- | Adds to all damage dealt
+    | Strengthen (EnumSet Class) Amount Int
+    -- | Unable to use 'Game.Model.Skill.Skill's
+    | Stun Class
+    -- | Target's skills swap enemies and allies
+    | Swap
+    -- | Forced to attack a target
+    | Taunt Slot
+    -- | Applying an effect lasts fewer turns
+    | Throttle Int Constructor
+    -- | Does not benefit from destructible defense
+    | Undefend
+    -- | Cannot counter or reflect
+    | Uncounter
+    -- | Reduces damage reduction 'Game.Model.Skill.Skill's
+    | Unreduce Int
+    -- | Lessens damage dealt
+    | Weaken (EnumSet Class) Amount Int
+    deriving (Eq, Show)
+
+instance ToJSON Effect where
+    toJSON x = object
+        [ "desc"    .= display' x
+        , "helpful" .= helpful x
+        , "sticky"  .= sticky x
+        , "trap"    .= False
+        , "visible" .= visible x
+        , "slot"    .= slot x
+        ]
+
+instance Classed Effect where
+    getClasses (Bleed c _ _)      = c
+    getClasses (Exhaust c)        = c
+    getClasses (Invulnerable c)   = singleton c
+    getClasses (Reduce c _ _)     = c
+    getClasses (ReflectAll c)     = singleton c
+    getClasses (Strengthen c _ _) = c
+    getClasses (Stun c)           = singleton c
+    getClasses (Weaken c _ _)     = c
+    getClasses _                  = mempty
+
+data Amount = Flat | Percent deriving (Bounded, Enum, Eq, Ord, Show)
+
+displayAmt :: Amount -> Int -> TextBuilder
+displayAmt Flat    = display
+displayAmt Percent = (++ "%") . display
+
+data Constructor
+    = Only Effect
+    | Any (Class -> Effect)
+    | Counters
+    | Stuns
+
+instance Eq Constructor where
+    Only x == Only y = x == y
+    Any  x == Any  y = x All == y All
+    Any  x == Only y = y ∈ (x <$> [minBound..maxBound])
+    Only x == Any  y = x ∈ (y <$> [minBound..maxBound])
+
+    Counters == Counters = True
+    Stuns    == Stuns    = True
+    _        == _        = False
+    {-# INLINABLE (==) #-}
+
+instance Show Constructor where
+    showsPrec _ Counters = showString "Counters"
+    showsPrec _ Stuns    = showString "Stuns"
+    showsPrec i (Only x) = showParen (i > 10)
+        $ showString "Only " . showsPrec 11 x
+    showsPrec i (Any xs) = showParen (i > 10)
+        $ showString "Any " . stripSuffixMay allSuffix . shows (xs All)
+      where
+        allSuffix               = ' ' : show All
+        stripSuffixMay suffix s = fromMaybe s $ stripSuffix suffix s
+
+instance Display Constructor where
+    display Counters       = "counters"
+    display Stuns          = "stuns and disabling effects"
+    display (Any x) = case ($ All) x of
+        Invulnerable All  -> "invulnerability"
+        ReflectAll All    -> "reflects"
+        Stun All          -> "stuns"
+        _                 -> "certain effects"
+    display (Only Bypass)  = "effects that grant invulnerability-bypassing"
+    display (Only Expose)  = "prevention of invulnerability and damage reduction"
+    display (Only Pierce)  = "effects that grant piercing damage"
+    display (Only Reflect) = "reflects"
+    display (Only x) = (++ " effects") case x of
+        Absorb            -> "chakra-absorbing"
+        Alone             -> "isolating"
+        AntiCounter       -> "anti-countering"
+        BlockAllies       -> "ally-blocking"
+        BlockEnemies      -> "enemy-blocking"
+        DamageToDefense   -> "damage-conversion"
+        Endure            -> "immortality"
+        Enrage            -> "anti-harm"
+        Face              -> "appearance changes"
+        Focus             -> "anti-stun"
+        NoIgnore          -> "anti-ignore"
+        Nullify           -> "nullifying"
+        Plague            -> "anti-heal"
+        Restrict          -> "target-restricting"
+        Reveal            -> "anti-invisible"
+        Seal              -> "anti-helpful"
+        Silence           -> "anti-effect"
+        Swap              -> "target-swapping"
+        Undefend          -> "anti-defense"
+        Uncounter         -> "anti-countering" -- yeah, yeah, I know
+        _                 -> "certain"
+
+construct :: Constructor -> [Effect]
+construct (Only x) = [x]
+construct (Any x)  = x <$> [minBound..maxBound]
+construct Counters = []
+construct Stuns    = []
+
+helpful :: Effect -> Bool
+helpful Absorb          = True
+helpful ChakraGuard{}   = True
+helpful Afflict{}       = False
+helpful Alone           = False
+helpful Alternate{}     = True
+helpful AntiCounter     = True
+helpful (Bleed _ _ x)   = x < 0
+helpful Bless{}         = True
+helpful Block{}         = False
+helpful BlockAllies{}   = False
+helpful BlockEnemies{}  = False
+helpful Boost{}         = True
+helpful (Build x)       = x >= 0
+helpful Bypass          = True
+helpful DamageToDefense = True
+helpful Disable{}       = False
+helpful Duel{}          = True
+helpful Endure          = True
+helpful Enrage          = True
+helpful Exhaust{}       = False
+helpful Expose          = False
+helpful Face            = True
+helpful Focus           = True
+helpful Heal{}          = True
+helpful Invulnerable{}  = True
+helpful Limit{}         = True
+helpful LimitOutgoing{} = False
+helpful NoIgnore        = False
+helpful Nullify         = True
+helpful Pierce          = True
+helpful Plague          = False
+helpful (Reduce _ _ x)  = x >= 0
+helpful Redirect{}      = True
+helpful Reflect         = True
+helpful ReflectAll{}    = True
+helpful Restrict        = False
+helpful Reveal          = False
+helpful Seal            = False
+helpful Share{}         = False
+helpful Silence         = False
+helpful (Snare x)       = x < 0
+helpful Strengthen{}    = True
+helpful Stun{}          = False
+helpful Swap            = False
+helpful Taunt{}         = False
+helpful Throttle{}      = False
+helpful Uncounter       = False
+helpful Undefend        = False
+helpful Unreduce{}      = False
+helpful Weaken{}        = False
+
+-- | Effect cannot be removed.
+sticky :: Effect -> Bool
+sticky Alternate{}  = True
+sticky Face         = True
+sticky Reflect      = True
+sticky ReflectAll{} = True
+sticky _            = False
+
+-- | Effect is affected by 'Focus'.
+isDisable :: Effect -> Bool
+isDisable Disable{} = True
+isDisable Silence   = True
+isDisable Stun{}    = True
+isDisable _         = False
+
+-- | Not canceled by 'Enrage'.
+bypassEnrage :: Effect -> Bool
+bypassEnrage Alone{}   = True
+bypassEnrage Afflict{} = True
+-- bypassEnrage Bleed{}  = True
+bypassEnrage Reveal{}  = True
+bypassEnrage Seal{}    = True
+bypassEnrage Share{}   = True
+bypassEnrage ef        = helpful ef
+
+adjust :: (Int -> Int) -> Effect -> Effect
+adjust f (Afflict i)            = Afflict $ f i
+adjust f (Bleed cla amt i)      = Bleed cla amt $ f i
+adjust f (Bless i)              = Bless $ f i
+adjust f (Build i)              = Build $ f i
+adjust f (Heal i)               = Heal $ f i
+adjust f (Reduce cla amt i)     = Reduce cla amt $ f i
+adjust f (Snare i)              = Snare $ f i
+adjust f (Strengthen cla amt i) = Strengthen cla amt $ f i
+adjust f (Throttle i constr)    = Throttle (f i) constr
+adjust f (Unreduce i)           = Unreduce $ f i
+adjust f (Weaken cla amt i)     = Weaken cla amt $ f i
+adjust _ ef                     = ef
+
+-- | Effect is displayed to the client.
+visible :: Effect -> Bool
+visible (Alternate a b) = a /= b
+visible Face = False
+visible _    = True
+
+-- | Slot component of an effect.
+slot :: Effect -> Maybe Slot
+slot (Block x)    = Just x
+slot (Duel x)     = Just x
+slot (Redirect x) = Just x
+slot (Share x)    = Just x
+slot (Taunt x)    = Just x
+slot _            = Nothing
+
+list :: EnumSet Class -> TextBuilder
+list classes = commas "and" $ Class.lower <$> toList classes
+
+instance Display Effect where
+    display Absorb =
+        "Gains chakra equal to the chakra cost of skills received from enemies."
+
+    display (Afflict x) =
+        "Receives " ++ display x ++ " affliction damage every turn."
+
+    display Alone =
+        "Invulnerable to allies."
+
+    display (Alternate from to) =
+        "[" ++ display from ++ "] becomes [" ++ display to ++ "]."
+
+    display AntiCounter =
+        "Cannot be countered or reflected."
+
+    display (Bleed classes amt x)
+      | x >= 0 =
+          displayAmt amt x ++ " additional damage taken from "
+          ++ list classes ++ " skills."
+      | otherwise =
+          "Reduces " ++ list classes ++ " damage received by "
+          ++ displayAmt amt (-x) ++ "."
+
+    display (Bless x) =
+        "Adds " ++ display x ++ " to skills that restore health."
+
+    display Block{} =
+        "Unable to affect "
+
+    display BlockAllies =
+        "Unable to affect allies."
+
+    display BlockEnemies =
+        "Unable to affect enemies."
+
+    display (Boost x) =
+        "Multiplies active effects from allies by " ++ display x ++ "."
+
+    display (Build x)
+      | x >= 0 =
+          "Adds " ++ display x ++ " to destructible skills."
+      | otherwise =
+          "Destructible skills provide " ++ display (-x)
+          ++ " fewer points of defense."
+
+    display Bypass =
+        "All skills bypass invulnerability."
+
+    display DamageToDefense =
+        "Converts non-affliction damage received into destructible defense."
+
+    display (Disable x) =
+        "Disables applying " ++ display x ++ "."
+
+    display Duel{} =
+        "Invulnerable to everyone but "
+
+    display Endure =
+        "Prevents health from dropping below 1."
+
+    display Enrage =
+        "Ignores harmful status effects from others."
+
+    display (Exhaust classes) =
+        "Adds 1 arbitrary chakra to the costs of " ++ list classes ++ " skills."
+
+    display Expose =
+        "Unable to reduce damage or become invulnerable."
+
+    display Face =
+        "Alters appearance."
+
+    display (ChakraGuard x) = "Loses " ++ display x ++ " less chakra to removal and stealing."
+    display (Heal x) =
+        "Restores " ++ display x ++ " health each turn."
+
+    display Focus =
+        "Ignores stuns and disabling effects."
+
+    display NoIgnore =
+        "Unable to ignore harm."
+
+    display (Invulnerable cla) =
+        "Invulnerable to " ++ Class.lower cla ++ " skills."
+
+    display (Limit x) =
+        "Reduces non-affliction damage received to at most " ++ display x ++ "."
+
+    display (LimitOutgoing x) =
+        "Limits non-affliction damage dealt to " ++ display x ++ "."
+
+    display Nullify =
+        "Ignores enemy skills."
+
+    display Pierce =
+        "Non-affliction skills deal piercing damage."
+
+    display Plague =
+        "Cannot be healed or cured."
+
+    display (Reduce (member Affliction -> True) amt x)
+      | x >= 0 =
+          "Reduces all damage received—including piercing and affliction—by "
+          ++ displayAmt amt x ++ "."
+      | otherwise =
+          "Increases all damage received—including piercing and affliction—by "
+          ++ displayAmt amt x ++ "."
+
+    display (Reduce classes amt x)
+      | x >= 0 =
+          "Reduces " ++ list classes ++ " damage received by "
+          ++ displayAmt amt x
+          ++ ". Does not affect piercing or affliction damage."
+      | otherwise =
+          "Increases " ++ list classes ++ " damage received by "
+          ++ displayAmt amt (-x)
+          ++ ". Does not affect piercing or affliction damage."
+
+    display Redirect{} =
+        "Redirects skills from enemies to "
+
+    display Reflect =
+        "Reflects the first harmful skill."
+
+    display (ReflectAll cla) =
+        "Reflects " ++ Class.lower cla ++ " skills."
+
+    display Reveal =
+        "Reveals cooldowns and invisible effects to the enemy team."
+
+    display Restrict =
+        "Skills that normally affect all opponents must be targeted."
+
+    display Seal =
+        "Ignores helpful effects."
+
+    display Share{} =
+        "Harmful skills received are also reflected to "
+
+    display Silence =
+        "Disables non-damage effects."
+
+    display (Snare x)
+      | x >= 0 =
+          "Increases cooldowns by " ++ display x ++ "."
+      | otherwise =
+          "Decreases cooldowns by " ++ display (-x) ++ ". Non-instant skills cannot have their cooldown times reduced below their baseline amounts."
+
+    display (Strengthen classes amt x) =
+        "Deals " ++ displayAmt amt x ++ " additional damage with "
+        ++ list classes ++ " skills."
+
+    display (Stun cla) =
+        "Disables " ++ Class.lower cla ++ " skills."
+
+    display Swap =
+        "Next skill will target allies instead of enemies and enemies instead of allies."
+
+    display Taunt{} =
+        "Can only affect "
+
+    display (Throttle x y) =
+        "Skills will apply " ++ display x ++ " fewer turns of "
+        ++ display y ++ "."
+
+    display Uncounter =
+        "Unable to benefit from counters or reflects."
+
+    display Undefend =
+        "Unable to benefit from destructible defense."
+
+    display (Unreduce x) =
+        "Reduces damage reduction skills by " ++ display x ++ "."
+
+    display (Weaken (member Affliction -> True) amt x) =
+        "Weakens all damage—including piercing and affliction—by "
+        ++ displayAmt amt x ++ "."
+
+    display (Weaken classes amt x) =
+        "Weakens " ++ list classes ++ " damage by " ++ displayAmt amt x
+        ++ ". Does not affect affliction damage."

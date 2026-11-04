@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>Sandbox · Naruto Arena</title>
+ <link rel="stylesheet" href="/sandbox.css">
+ <script defer src="/arena-text.js"></script><script defer src="/sandbox.js"></script><script defer src="/sandbox-guide.js"></script>
+<link rel="stylesheet" href="/rank-layout.css?v=rank-overlay-6"><script defer src="/rank-layout.js?v=rank-overlay-6"></script></head>
+<body><main>
+ <header><div><small>NARUTO ARENA</small><h1>Sandbox de ninjas</h1></div><nav><a href="/classic">Novos personagens</a> <a href="/ingame">Voltar ao jogo</a></nav></header>
+ <p>Salve suas fichas neste navegador e use “Testar contra a CPU” para experimentar as mudanças.</p>
+ <section class="toolbar">
+  <label>Ninja<select id="roster"></select></label>
+  <button id="create">Criar ninja</button>
+  <button id="revert" disabled>Reverter ao original</button>
+ </section>
+ <form id="editor" hidden>
+  <section class="identity">
+   <label>Nome<input id="name" maxlength="60" required></label>
+   <label>PV iniciais (máx. 100)<input id="hp" type="number" min="1" max="100" required></label>
+   <label>Descrição<textarea id="bio" maxlength="800"></textarea></label>
+  </section>
+  <p>Consulte a técnica original como referência ou configure sua versão com vários efeitos, classes, preparação e alternativas. Salvar guarda um rascunho; “Lançar no elenco” disponibiliza a ficha na seleção normal deste navegador.</p>
+  <details class="classGuide"><summary>Entender as classes, os alvos e a preparação</summary><p><b>Tipo:</b> Física (matéria e golpes), Chakra (energia), Mental (mente) e Aflição (efeitos persistentes). Uma técnica pode pertencer a mais de uma classe.</p><p><b>Distância:</b> Corpo a corpo ou À distância. Esses rótulos participam das interações com outras técnicas.</p><p><b>Instantânea:</b> Executa uma vez; efeitos aplicados podem continuar pela própria duração. <b>Ação:</b> Repete a execução e pausa quando perde contato. <b>Controle:</b> É interrompido quando perde contato. <b>Contínua:</b> Continua sem exigir uma nova ação.</p><p><b>Classe afetada:</b> Num efeito de atordoamento, escolha Física para bloquear só técnicas físicas. “Todas” bloqueia todas as classes. Os tipos definidos na ficha são usados pelo motor; não são só etiquetas.</p><p><b>Preparação:</b> A técnica usada registra uma marca. Outra técnica pode exigir uma ou mais utilizações dessa preparação, e consumir as marcas ao ser usada.</p><p><b>Alternativas:</b> Adicione as técnicas 5, 6 ou outras. Informe de qual espaço (1–4) cada uma é alternativa. Na técnica de preparação, crie a substituição e sua duração. As alternativas ficam reservadas até a transformação.</p><p><b>Única:</b> Não pode ser copiada. <b>Invisível:</b> O adversário não vê o ícone; o autor pode consultar o efeito.</p></details>
+<div id="portraitEditor"></div><div id="skills"></div><button type="button" id="addSkill">+ Técnica alternativa</button>
+  <footer>
+   <button type="submit">Salvar alterações</button>
+   <button type="button" id="publish">Lançar no elenco</button><button type="button" id="export">Exportar ficha</button><button type="button" id="test">Testar contra a CPU</button>
+   <output id="status" aria-live="polite"></output>
+  </footer>
+ </form>
+</main></body>
+</html>

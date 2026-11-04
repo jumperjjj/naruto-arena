@@ -1,0 +1,84 @@
+*{box-sizing:border-box}body{margin:0;background:#25190f url('/assets/bg/lobby.png') center/cover fixed;color:#342414;font:15px/1.45 system-ui,sans-serif}main{max-width:1160px;margin:22px auto;padding:24px;background:#f1e5c2;border:3px solid #9d2e1d}header,.toolbar,footer,.identity,.fields{display:flex;align-items:end;gap:12px;flex-wrap:wrap}header{justify-content:space-between;border-bottom:1px solid #ad8860;padding-bottom:14px}h1{margin:2px 0;color:#92251c}h3{font-size:15px;margin:18px 0 8px;color:#7d2f1e}small,.help{color:#6e5b40;font-size:12px}label{display:grid;gap:5px;min-width:0}input,select,textarea,button,a{font:inherit}input,select,textarea{background:#fffaf0;border:1px solid #a2855c;border-radius:3px;padding:8px;min-width:0}button,a{background:#eed6a0;border:1px solid #977747;border-radius:3px;padding:8px 12px;text-decoration:none;cursor:pointer;color:#342414}button:hover,a:hover{background:#f6e8c0}button:disabled{opacity:.45;cursor:default}.toolbar{margin:20px 0}.toolbar>label{flex:1}.identity label:first-child{flex:1}.identity label:last-child{flex-basis:100%}textarea{width:100%;min-height:125px;resize:vertical;line-height:1.55;font-family:Arial,sans-serif;font-size:15px}#bio{min-height:100px}#skills{display:grid;gap:20px;margin-top:20px}.skillEditor{min-width:0;border:1px solid #a18157;padding:20px;background:#fff5db;display:grid;gap:12px}legend{font-size:18px;font-weight:750;color:#902519}.fields>label{flex:1;min-width:120px}.chakra{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.chakra label{display:block;font-size:12px}.chakraSymbol{display:inline-block;width:15px;height:15px;vertical-align:middle;border:1px solid #352d21;margin-right:5px}.stepper{display:flex;margin-top:4px;max-width:210px}.stepper input{width:70px;text-align:center;border-radius:0;appearance:textfield;-moz-appearance:textfield}.stepper input::-webkit-inner-spin-button{appearance:none}.stepper button{width:38px;padding:8px;font-weight:bold;font-size:19px;line-height:1}.classChecks label,.check{display:flex;align-items:center;gap:7px}.classChecks input,.check input{width:18px;height:18px}.artEditor{display:flex;gap:18px;padding:14px;background:#f0e3c5;border:1px solid #c6ac82;align-items:start}.artEditor>div:last-child{flex:1;display:grid;gap:6px}.artFrame{flex:0 0 100px;width:100px;height:100px;overflow:hidden;border:1px solid #2c2519;background:#302a20}.artFrame img{width:100%;height:100%;object-fit:cover;display:block}.artEditor input[type=range]{width:100%;padding:0}.artEditor input[type=file]{width:100%;font-size:12px}.artEditor b{color:#7d2f1e}.recipe{margin-bottom:12px;padding:14px;background:#f5ecd8;border:1px solid #c9b591;border-left:3px solid #8e653c}.recipeHeader{display:flex;gap:12px;align-items:end}.recipeHeader label{flex:1}.recipeHeader button{font-size:22px;padding:4px 14px}.recipe .fields{margin-bottom:8px}.recipe .help{margin:5px 0 10px}.native{border:1px dashed #a88857;padding:12px}.native summary{cursor:pointer;color:#7d2f1e;font-weight:650}.native dl{display:grid;grid-template-columns:130px 1fr;gap:5px}.native dd{margin:0;overflow-wrap:anywhere}.sourceCode{max-height:300px;overflow:auto;white-space:pre-wrap;background:#28281f;color:#f3e9c7;padding:12px;font:12px/1.5 Consolas,monospace}.swap{padding:10px;background:#e9dfc5;margin-bottom:8px}.configuration[hidden]{display:none}.configuration{border-top:1px solid #cbb08a;padding-top:5px}footer{position:sticky;bottom:0;z-index:5;padding:12px;background:#e9d6ad;border-top:2px solid #a88652;margin-top:18px}#publish{background:#d6dfb0}output{flex-basis:100%;font-weight:650}output.error{color:#a12417}#addSkill{margin-top:20px}input[type=url]{width:100%}@media(max-width:700px){main{margin:0;padding:12px}.chakra{grid-template-columns:repeat(2,minmax(0,1fr))}.artEditor{flex-wrap:wrap}.artEditor>div:last-child{min-width:200px}.fields>label{min-width:150px}.skillEditor{padding:12px}footer{position:static}.native dl{grid-template-columns:1fr}}
+@font-face{font-family:ArenaCondensed;src:url('/assets/fonts/RobotoCondensed.ttf') format('truetype');font-weight:100 900;font-display:swap}
+.textToolbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap}.textToolbar input[type=color]{width:48px;padding:2px;height:35px}.richTextPreview{padding:14px;border:1px solid #c9b589;background:#f2e6be;min-height:62px;font:600 16px/1.35 ArenaCondensed,'Arial Narrow',Arial,sans-serif;text-transform:uppercase}.termDamage{color:#e64c08}.termStun{color:#159f56;text-decoration:underline}.termDefense{color:#128eab;text-decoration:underline}.termTechnique,.termChakra{color:#b22aaa;text-decoration:underline}
+/* Work on one technique at a time; secondary settings stay folded. */
+main{max-width:1120px;padding:18px}
+#skills{display:block;margin-top:10px}
+#skills>.skillEditor[hidden]{display:none!important}
+#skillTabs{display:flex;flex-wrap:wrap;gap:5px;margin-top:16px;padding-bottom:8px;border-bottom:1px solid #bda57b}
+#skillTabs button{padding:6px 9px;font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#skillTabs button[aria-pressed=true]{background:#843927;color:#fff8e6;border-color:#783321}
+.skillEditor{padding:12px;gap:8px}
+legend{font-size:16px}
+input,select,textarea{padding:5px 7px;font-size:13px}
+button,a{padding:6px 9px;font-size:13px}
+textarea{min-height:72px;font-size:14px;line-height:1.4}
+.skillEditor textarea{height:78px;min-height:65px}
+#bio{height:65px;min-height:60px}
+.artFold,.optionFold{border:1px solid #ccb88e;background:#f6edd6;padding:0 9px}
+.artFold>summary,.optionFold>summary{cursor:pointer;padding:7px 0;font-size:13px;font-weight:650;color:#754329}
+.artEditor{gap:10px;padding:8px;margin-bottom:8px;border:0}
+.artEditor>div:last-child{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px}
+.artEditor b,.artEditor small{grid-column:1/-1}
+.artFrame{flex-basis:80px;width:80px;height:80px}
+.artEditor input[type=file]{padding:3px;font-size:11px}
+.artEditor label{font-size:12px;gap:2px}
+.artEditor .fields{gap:7px}
+.optionFold h3{margin:8px 0}
+.optionFold .fields{margin:7px 0}
+.optionFold .help{margin:6px 0}
+.optionFold>.stepper,.optionFold>label:last-child{margin-bottom:8px}
+.recipe{padding:9px;margin-bottom:8px}
+.recipe .fields{display:grid;grid-template-columns:1.3fr .85fr 1.6fr .85fr 1fr;gap:8px}
+.recipe .fields>label{min-width:0;font-size:12px}
+.recipeHeader label{font-size:12px}
+.recipeHeader button{font-size:18px;padding:2px 10px}
+.help{font-size:11px;line-height:1.35}
+.stepper{margin-top:2px;max-width:160px}
+.stepper input{width:52px}
+.stepper button{width:30px;padding:5px;font-size:17px}
+.richTextPreview{min-height:42px;padding:9px;font-size:14px}
+.textToolbar{gap:5px}.textToolbar label{font-size:11px}.textToolbar input[type=color]{height:29px}
+.fields{gap:8px}.fields>label{min-width:110px}
+.classChecks label{font-size:12px;min-width:140px}
+.native{padding:8px;font-size:12px}
+.native summary{font-size:12px}
+footer{padding:8px;margin-top:12px;gap:8px}
+#addSkill{margin-top:10px}
+@media(max-width:760px){.recipe .fields{grid-template-columns:repeat(2,minmax(0,1fr))}.artEditor>div:last-child{grid-template-columns:1fr}.artEditor b,.artEditor small{grid-column:auto}#skillTabs button{max-width:170px}.fields>label{min-width:120px}}
+#editorMode{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#eee0bb;border:1px solid #b99a67;padding:12px;margin:14px 0 8px}
+#editorMode p{font-size:12px;margin:3px 0 0;color:#6f5b3e}.modeButtons{display:flex;gap:6px;flex-shrink:0}.modeButtons [aria-pressed=true]{background:#7e3525;color:#fff8e5;border-color:#713020}
+#editorLearning{margin:8px 0 16px;font-size:13px}#editorLearning summary{cursor:pointer;font-weight:650;color:#74452d}#editorLearning li{margin:5px 0}
+.guideWizard,.guideNavigation,.guidePreview,.autoDescription{display:none}
+.guideWriting{border:1px solid #cbb38b;padding:7px 10px}.guideWriting>summary{cursor:pointer;font-size:12px;font-weight:600;color:#755339}.guideWriting[open]>.textToolbar{margin:7px 0}.guideWriting[open]>label{margin-top:8px}
+body[data-editor-mode=advanced] .guideWriting{border:0;padding:0}body[data-editor-mode=advanced] .guideWriting>summary{display:none}body[data-editor-mode=advanced] .guideWriting>label,body[data-editor-mode=advanced] .guideWriting>.textToolbar,body[data-editor-mode=advanced] .guideWriting>.richTextPreview{display:flex}body[data-editor-mode=advanced] .recipeGuideTitle{display:none}
+body[data-editor-mode=simple] .classGuide{display:none}
+body[data-editor-mode=simple] .skillEditor{display:block;position:relative;min-height:460px;padding:14px}
+body[data-editor-mode=simple] .skillEditor> :not(legend):not(.guidePreview){width:calc(100% - 300px);margin-bottom:10px}
+body[data-editor-mode=simple] .techniqueName{display:grid}
+body[data-editor-mode=simple] .guideWizard,body[data-editor-mode=simple] .guideNavigation,body[data-editor-mode=simple] .guidePreview{display:block}
+body[data-editor-mode=simple] .autoDescription{display:flex;font-size:12px}
+body[data-editor-mode=simple] .guidePreview{position:absolute;right:14px;top:23px;width:272px;padding:16px;background:#efe3bd url('/assets/bg/paper.jpg') repeat;border:1px solid #b99a64;box-shadow:0 2px 5px #4f352018;color:#312310}
+.guidePreview>small{font:10px system-ui;color:#817151;letter-spacing:.4px}.guidePreview h3{font:700 21px ArenaCondensed,Arial,sans-serif;color:#ad251b;margin:10px 0}.guidePreviewText{white-space:normal;font:600 15px/1.4 ArenaCondensed,Arial,sans-serif;text-transform:uppercase}.guidePreviewCost{display:flex;align-items:center;flex-wrap:wrap;gap:3px;font:10px ArenaCondensed,Arial,sans-serif;color:#7b6846;margin:10px 0}.guidePreviewCost .chakraSymbol{width:12px;height:12px;margin:0}.guideCooldown{margin-left:auto}.guidePreviewClasses{font:11px/1.4 ArenaCondensed,Arial,sans-serif;color:#81775e;margin:14px 0 0;text-transform:uppercase}
+.guideWarnings{font:12px/1.4 system-ui;margin-top:14px;color:#89511c}.guideWarnings ul{padding-left:17px;margin-bottom:0}.guideWarnings li{margin:6px 0}.guideOkay{color:#637044;font-size:11px}
+.guideStepNav{display:flex;gap:3px;margin:13px 0}.guideStepNav button{flex:1;min-width:0;text-align:center;background:#eadbb8;border:1px solid #c3ab7e;padding:6px 2px;font-size:12px}.guideStepNav button span{display:block;font-size:9px;line-height:1.2;margin-top:3px}.guideStepNav [aria-current=step]{background:#813b29;color:#fff9e8;border-color:#813b29}.guideStepTitle{font-size:17px!important;margin:13px 0 10px!important}
+.guideTemplates{background:#efe4cb;padding:12px;border:1px solid #ceb98f}.guideTemplates label{font-size:12px}.guideTemplates p{font-size:12px;margin:7px 0}.guideTemplates small{display:block;margin-top:7px;font-size:11px}.guideNativeNotice{background:#f0e5c9;padding:10px;border-left:3px solid #a38450;font-size:12px;margin-bottom:12px}.guideNativeNotice p{margin:5px 0}
+body[data-editor-mode=simple] .guideNavigation{display:flex;justify-content:space-between;gap:10px;margin-top:14px}.guideNavigation button:last-child{background:#deddb1}
+body[data-editor-mode=simple] .skillEditor [data-guide-content]{display:none!important}
+body[data-editor-mode=simple] .skillEditor[data-phase="0"] [data-guide-content="0"],body[data-editor-mode=simple] .skillEditor[data-phase="1"] [data-guide-content="1"],body[data-editor-mode=simple] .skillEditor[data-phase="2"] [data-guide-content="2"],body[data-editor-mode=simple] .skillEditor[data-phase="3"] [data-guide-content="3"],body[data-editor-mode=simple] .skillEditor[data-phase="4"] [data-guide-content="4"]{display:block!important}
+body[data-editor-mode=simple] .skillEditor .simpleIrrelevant,body[data-editor-mode=simple] .skillEditor .simpleIrrelevant[data-guide-content],body[data-editor-mode=simple] .advancedOnly,body[data-editor-mode=simple] .advancedReference{display:none!important}
+body[data-editor-mode=simple] .skillEditor[data-phase="1"] .recipe .fields{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}
+body[data-editor-mode=simple] .skillEditor[data-phase="3"] .guideChakra{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))}
+body[data-editor-mode=simple] .recipe{margin-bottom:8px;padding:10px}
+body[data-editor-mode=simple] .skillEditor:not([data-phase="0"]):not([data-phase="1"]) .recipes{display:none}
+body[data-editor-mode=simple] .recipeGuideTitle{display:none;color:#7e432d;font-size:12px;margin-bottom:8px}
+body[data-editor-mode=simple] .skillEditor[data-phase="1"] .recipeGuideTitle{display:block}
+body[data-editor-mode=simple] .optionFold>summary{display:none}
+.guideHelp{font-size:12px;color:#776044;line-height:1.4}
+@media(max-width:850px){#editorMode{align-items:start;flex-direction:column}body[data-editor-mode=simple] .skillEditor> :not(legend):not(.guidePreview){width:100%}body[data-editor-mode=simple] .guidePreview{position:static;width:100%;margin-top:14px}.guideStepNav button span{font-size:10px}.modeButtons{flex-wrap:wrap}}
+body[data-editor-mode=advanced] .autoDescription{display:flex;font-size:12px}
+body .autoDescription[hidden]{display:none!important}
+body[data-editor-mode=simple] .configuration[hidden]{display:none!important}
+body[data-editor-mode=advanced] .guideWriting>label{display:grid}
+body[data-editor-mode=advanced] .guideWriting>.richTextPreview{display:block}
+body[data-editor-mode=advanced] .guideWriting>.textToolbar{display:flex}

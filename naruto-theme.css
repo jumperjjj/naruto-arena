@@ -1,0 +1,25 @@
+body{background:#211814;margin:0}
+.backdrop{background: url('/assets/bg/valley.png') center/cover no-repeat}
+.inLobby .backdrop{background:url('/assets/bg/lobby.png'),url('/assets/bg/narusasu.jpg');background-size:100% 100%}
+.inLobby .killerArt{display:none}
+.killerArt{background:none}
+#lobbyBottom,#characterPreview,.skills,#details,.bottomTools,#resultScroll,#paymentPanel{border-color:#a51f11;background-color:#f2e7bf}
+#lobbyBottom{background:#eee4bc url('/assets/bg/scroll.jpg') center/100% 100% no-repeat}
+#lobbyBottom:before{content:'';position:absolute;left:-10px;top:-7px;bottom:-7px;width:37px;border:2px solid #482010;border-radius:40% 40% 36% 36% / 4% 4% 4% 4%;background:linear-gradient(#9d2115 0 8%,transparent 8% 91%,#a42b17 91%),linear-gradient(90deg,#12291c,#588244 52%,#21391e);box-shadow:2px 2px 3px #0007;pointer-events:none}
+#rosterFilters{left:39px;gap:6px}
+#rosterFilters input{font-size:10px;background:#f9f1d6;color:#272213;border:1px solid #796849;max-width:144px;padding:3px 5px}
+#lobbyRoster{left:39px;top:45px;width:437px;height:162px;display:grid;grid-template-columns:repeat(7,49px);grid-auto-rows:50px;grid-template-rows:none;align-content:start;gap:5px 12px;overflow:auto;padding:2px 8px 4px 2px}
+#lobbyRoster button{width:49px;height:49px;padding:0;background:#dbcfa7;border:1px solid #4d3a25}
+#lobbyRoster button[hidden]{display:none}
+#lobbyRoster img{width:47px;height:47px;border:0}
+#lobbyRoster b{display:none}
+#lobbyRoster button.picked{outline:2px solid #d85a16}
+#teamSelection{left:auto;right:9px;width:220px;top:44px;padding-left:12px}
+#teamSlots button:not(.removeTeamMember),#teamSlots .emptySlot{width:61px;height:77px}
+#teamSlots img{width:59px;height:59px}
+#startCpuButton{background:linear-gradient(#fff0bf,#d4ac5b);border:3px ridge #953d25;color:#271707;box-shadow:0 2px 5px #2d170c90}
+#previewSkills img,.skill img{object-fit:cover}
+#previewDescription p{font-size:10px}
+#details h2,#previewName,#previewDescription h3{color:#9d2217}
+.inLobby:has(#characterPreview:not([hidden])) .backdrop{filter:brightness(.78)}
+#message:empty{display:none}

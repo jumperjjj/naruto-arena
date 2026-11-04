@@ -1,0 +1,272 @@
+/* Original illustrated arena. Layout and interaction sizes follow Fog Arena v10. */
+:root{font-family:'Arial Narrow',Arial,sans-serif;color-scheme:dark}
+body{background:radial-gradient(ellipse at 50% 0,#293e56,#101723 70%)}
+main{background:#22334a}.backdrop{background:linear-gradient(90deg,#15283bef,#223d50b8 55%,#182534eb),url('/assets/lol/lux/splash.jpg') center/cover no-repeat}.backdrop:after{background:radial-gradient(ellipse at 48% 45%,#88bbc41f,transparent 70%);opacity:1}
+.killerArt{background:url('/assets/lol/ahri/splash.jpg') center/cover no-repeat;right:128px;top:92px;width:245px;height:310px;opacity:.35;filter:none;mask-image:linear-gradient(transparent,#000 20%,#000 75%,transparent);border-radius:30%}
+.portrait img{transform:none!important;object-fit:cover;object-position:center!important}.profile img{object-fit:cover;object-position:center}
+.profile b{color:#f4d29d}.profile span{color:#f0ebd9}.profile{color:#fff}#endTurn,#exchangeButton,.energyBar{color:#fff5da;text-shadow:0 1px 2px #000}
+.windowTools button,.windowTools label{background:#142338dd;border-color:#c4b38970}.windowTools button:disabled{opacity:.7;color:#eee}
+.skills,.bottomTools,#details,#lobbyBottom,#characterPreview,#paymentPanel,#resultScroll{background-color:#eee4c1;background-image:radial-gradient(circle at 12% 20%,#c7a7540b 1px,transparent 2px),linear-gradient(110deg,#fff7d1aa,transparent 60%);background-size:11px 11px,auto;border-color:#7f3934;box-shadow:inset 0 0 0 1px #b8874f}
+.skills img,.detailIcon,#previewSkills img,#previewPortrait,#lobbyRoster img,#teamSlots img,#turnSummary img,.effectIcon img,#paymentSkills img{object-fit:cover!important;object-position:center!important;image-rendering:auto}
+.skill{background:#2a3545}.skill img{filter:none}.skill.unavailable img{filter:grayscale(.8);opacity:.32}.skill.unavailable{background:#474744}.preparedAction{background:#3d493f}.preparedAction:has(img){background:#26384a}
+.hp i{background:#65b34d}.hp.low i{background:#e14b3b}.hp{background:#f1eacb}.hp b{font-weight:bold;color:#142014}
+#details h2,#previewName,#previewDescription h3{color:#a32727}#details>p{font-family:'Arial Narrow',Arial,sans-serif!important;font-size:9px!important;line-height:12px!important;text-transform:none;max-height:47px!important;margin-top:4px}
+#details .costs{top:10px;right:11px;left:auto}#details h2{max-width:380px}.skillClasses{position:absolute;bottom:6px;left:103px;font-size:7px;color:#826c45;text-transform:uppercase}.recharge{color:#826c45}
+.term{font-weight:bold;text-decoration:underline;text-underline-offset:1px}.term.dano{color:#c23b13}.term.cura{color:#147b35}.term.controle{color:#8c20b0}.term.protecao{color:#1262ad}.term.duracao{color:#176871}.term.combo{color:#a32074}
+#previewDescription p{font-family:'Arial Narrow',Arial,sans-serif;font-size:10px;line-height:14px;max-width:620px;text-transform:none}#previewRole{font-size:8px;color:#786843;max-width:170px;text-align:right}#previewSkills button{background:#303e4a}#previewDescription .menuCosts{gap:4px}.energyCaption{font-size:8px;color:#897548}.menuCosts b{color:#897548;font-size:8px}.menuCosts .orb{width:10px;height:10px}
+#lobbyRoster{grid-template-columns:repeat(3,100px);grid-template-rows:repeat(2,70px);gap:5px 9px;width:325px;height:150px;left:20px;top:48px;overflow:visible}#lobbyRoster button{width:100px;height:70px;padding:3px 2px;background:#e4d9b5;border:1px solid transparent}#lobbyRoster img{width:48px;height:48px;border:1px solid #3f4037}#lobbyRoster b{font-size:8px;line-height:11px;max-width:98px;white-space:normal}#lobbyRoster button.inspected{background:#f6e7ad;border-color:#a16c36}#lobbyRoster button.picked{box-shadow:inset 0 0 0 1px #a08a46}#teamSelection{left:374px}#rosterFilters{gap:8px}
+#lobbyIdentity{position:absolute;left:46px;top:53px;color:#f4e5bd;text-shadow:0 2px 8px #071621;pointer-events:none}#lobbyIdentity>span{font-size:8px;letter-spacing:2px;color:#a9c7cc}#lobbyIdentity h1{font-size:44px;line-height:.95;letter-spacing:1px;margin:13px 0;font-family:Georgia,serif}#lobbyIdentity h1 em{font-size:52px;color:#f4c475;font-style:normal}#lobbyIdentity p{font-size:11px;line-height:17px;color:#ddd9c7}.inLobby .killerArt{opacity:.8;right:53px;top:35px;width:390px;height:292px;mask-image:linear-gradient(90deg,transparent,#000 20%,#000 78%,transparent);border-radius:0}.inLobby:has(#characterPreview:not([hidden])) #lobbyIdentity{display:none}.inLobby:has(#characterPreview:not([hidden])) .killerArt{opacity:.13}
+.bottomTools strong{font-size:17px;color:#946b4d;opacity:.85;transform:rotate(-8deg)}.bottomTools strong span{font-size:20px}#details .characterDetail{object-fit:cover}#turnSummary{color:#f2ead1}#closeCharacterPreview span{font-size:7px}#resultTitle{font-family:Georgia,serif}#resultScroll.victory #resultTitle{color:#357538}#resultScroll p{font-size:12px;line-height:19px}
+.scrollBinding,.scrollHandle{background:linear-gradient(90deg,#293f30,#638251 45%,#344a32)!important;border-color:#502b23!important}.scrollBinding:before,.scrollBinding:after{background:#8c322b!important}
+footer{color:#b5babf}.energyName{display:none}#message:empty{display:none}
+.previewSkillArt{position:absolute;right:34px;bottom:17px;width:75px;height:75px;object-fit:cover;border:1px solid #393d32}#characterPreview:has(.previewSkillArt) #previewDescription p{max-width:535px}
+#characterPreview:has(.previewSkillArt) #previewDescription .menuCosts b{margin-right:95px}
+.previewClasses{font-size:8px;line-height:11px;color:#7e6843;text-transform:uppercase;max-width:535px;margin-top:4px}#previewDescription p{line-height:12px;font-size:10px;max-height:60px;overflow:auto}#details>p{max-height:49px!important}.rulesBody{max-height:58vh;overflow:auto;font-size:12px;line-height:1.5}.rulesBody h3{color:#9d3530;margin:16px 0 5px}.rulesBody dt{font-weight:bold;color:#244d6f}.rulesBody dd{margin:0 0 7px}#rulesDialog{width:560px}.windowTools{gap:5px}.windowTools #rulesButton{border-color:#d4bf88}
+#previewDescription{overflow:visible}#previewDescription p{margin:3px 0 4px;max-height:48px}#previewDescription .previewClasses{margin-top:0}
+
+/* Hextech gold, deep blue and official champion splashes. */
+.inspectForm{float:right;font-size:7px;padding:2px 5px;border:1px solid #9c8247;background:#f5edce;color:#6b4930;max-width:230px}.previewClasses{clear:both}
+body{background:radial-gradient(ellipse at 50% 0,#19394b,#07121b 75%)}
+.skills,.bottomTools,#details,#lobbyBottom,#characterPreview,#paymentPanel,#resultScroll{border-color:#76623d;box-shadow:inset 0 0 0 1px #c5a668}
+.scrollBinding,.scrollHandle{background:linear-gradient(90deg,#102a38,#2c5363 45%,#0d2433)!important;border-color:#9b7e43!important}
+.scrollBinding:before,.scrollBinding:after{background:#c5a668!important}
+.inLobby .killerArt{background-size:cover;background-position:62% center;right:0;width:510px;opacity:.75}
+.backdrop{background:linear-gradient(90deg,#071a29e8,#112937b5 55%,#091c2ee6),url('/assets/lol/lux/splash.jpg') center/cover no-repeat}
+.skill,#previewSkills button{position:relative}.skill:after,#previewSkills button:after{content:attr(data-hotkey);position:absolute;bottom:1px;right:3px;background:#091b27dd;border:1px solid #bda66d;color:#f4dda0;font:bold 9px Arial;padding:1px 3px;pointer-events:none}
+#lobbyIdentity>span{font-size:7px;letter-spacing:1.4px}.bottomTools strong{color:#80663a}
+body{background:#211814;margin:0}
+.backdrop{background: url('/assets/bg/valley.png') center/cover no-repeat}
+.inLobby .backdrop{background:url('/assets/bg/lobby.png'),url('/assets/bg/narusasu.jpg');background-size:100% 100%}
+.inLobby .killerArt{display:none}
+.killerArt{background:none}
+#lobbyBottom,#characterPreview,.skills,#details,.bottomTools,#resultScroll,#paymentPanel{border-color:#a51f11;background-color:#f2e7bf}
+#lobbyBottom{background:#eee4bc url('/assets/bg/scroll.jpg') center/100% 100% no-repeat}
+#lobbyBottom:before{content:'';position:absolute;left:-10px;top:-7px;bottom:-7px;width:37px;border:2px solid #482010;border-radius:40% 40% 36% 36% / 4% 4% 4% 4%;background:linear-gradient(#9d2115 0 8%,transparent 8% 91%,#a42b17 91%),linear-gradient(90deg,#12291c,#588244 52%,#21391e);box-shadow:2px 2px 3px #0007;pointer-events:none}
+#rosterFilters{left:39px;gap:6px}
+#rosterFilters input{font-size:10px;background:#f9f1d6;color:#272213;border:1px solid #796849;max-width:144px;padding:3px 5px}
+#lobbyRoster{left:39px;top:45px;width:437px;height:162px;display:grid;grid-template-columns:repeat(7,49px);grid-auto-rows:50px;grid-template-rows:none;align-content:start;gap:5px 12px;overflow:auto;padding:2px 8px 4px 2px}
+#lobbyRoster button{width:49px;height:49px;padding:0;background:#dbcfa7;border:1px solid #4d3a25}
+#lobbyRoster button[hidden]{display:none}
+#lobbyRoster img{width:47px;height:47px;border:0}
+#lobbyRoster b{display:none}
+#lobbyRoster button.picked{outline:2px solid #d85a16}
+#teamSelection{left:auto;right:9px;width:220px;top:44px;padding-left:12px}
+#teamSlots button:not(.removeTeamMember),#teamSlots .emptySlot{width:61px;height:77px}
+#teamSlots img{width:59px;height:59px}
+#startCpuButton{background:linear-gradient(#fff0bf,#d4ac5b);border:3px ridge #953d25;color:#271707;box-shadow:0 2px 5px #2d170c90}
+#previewSkills img,.skill img{object-fit:cover}
+#previewDescription p{font-size:10px}
+#details h2,#previewName,#previewDescription h3{color:#9d2217}
+.inLobby:has(#characterPreview:not([hidden])) .backdrop{filter:brightness(.78)}
+#message:empty{display:none}
+.arenaBanner{position:absolute;inset:14px 0 auto 22px;height:253px;display:flex;align-items:center;pointer-events:none}
+.arenaBanner img{width:290px;height:234px;object-fit:contain;object-position:center bottom}
+.arenaBanner h1{margin:0 0 20px -9px;color:#f5b85e;font:italic 900 35px Georgia,serif;text-transform:uppercase;text-shadow:2px 3px #482213,0 0 13px #481a13}
+.inLobby:has(#characterPreview:not([hidden])) .arenaBanner{display:none}
+#lobbyRoster{width:429px;height:150px;overflow-x:hidden;overflow-y:auto;grid-template-columns:repeat(7,47px);gap:5px 10px;scrollbar-width:thin}
+#lobbyRoster button{width:47px;height:48px}
+#lobbyRoster img{width:45px;height:46px}
+#rosterFilters{left:46px}
+#startCpuButton{left:16%;transform:none;width:30%}
+#privateMatch{position:absolute;left:54%;top:242px;width:30%;height:30px;background:linear-gradient(#fff0bf,#d4ac5b);border:3px ridge #953d25;color:#271707;font-weight:bold;box-shadow:0 2px 5px #2d170c90}
+
+/* Classic lobby proportions, measured on the 770 × 560 reference. */
+#lobbyBottom{box-sizing:border-box;left:28px;top:314px;width:729px;height:221px;padding:0;border:0;background-size:100% 100%;box-shadow:none}
+#lobbyBottom::before{display:none}
+#lobbyRoster{left:57px;top:24px;width:437px;height:166px;grid-template-columns:repeat(7,50px);grid-auto-rows:50px;gap:7px 11px;padding:0 8px 0 0}
+#lobbyRoster button{width:50px;height:50px;border:1px solid #2f271d}
+#lobbyRoster img{width:48px;height:48px}
+#rosterFilters{top:auto;bottom:14px;left:57px;gap:10px}
+#rosterFilters button,#rosterFilters input{padding:1px 5px;border:1px solid #6d5f40;border-radius:0}
+#teamSelection{left:510px;right:auto;top:25px;width:201px;padding:0;border:0;color:#20190e}
+.localProfile{display:flex;align-items:flex-start;gap:10px;height:97px;font:bold 10px/1.55 Arial,sans-serif}
+.localProfile img{width:76px;height:76px;border:2px solid #251a12;object-fit:cover}
+.localProfile span{display:block}
+#teamSelection h3{margin:0 0 4px;font-size:9px}
+#teamSlots{gap:8px}
+#teamSlots button:not(.removeTeamMember),#teamSlots .emptySlot{width:52px;height:51px;border:1px solid #2f271d}
+#teamSlots img{width:50px;height:49px}
+#teamSlots span{display:none}
+#teamSelection p{display:none}
+#lobbyNotice{width:193px;left:538px;right:auto;top:517px;font-size:8px;color:#34200e;text-shadow:none;z-index:1}
+#startCpuButton,#privateMatch{top:253px;height:57px;width:192px}
+#startCpuButton{left:362px}
+#privateMatch{left:567px}
+#startCpuButton.classicQuick,#privateMatch{background:transparent center/contain no-repeat;border:0;box-shadow:none;font-size:0;color:transparent}
+#startCpuButton.classicQuick{background-image:url('/assets/bg/quick.png')}
+#privateMatch{background-image:url('/assets/bg/private.png')}
+#privateMatch:hover,#startCpuButton.classicQuick:hover{filter:brightness(1.1)}
+.arenaBanner{inset:7px 0 auto 19px;height:249px}
+.arenaBanner img{width:300px;height:245px}
+.arenaBanner h1{font-size:31px;margin-left:-30px}
+
+#lobbyBottom{left:-9px;top:282px;width:742px;height:226px}
+#lobbyRoster{left:62px;top:26px;width:430px;height:165px;overflow:hidden}
+#rosterFilters{left:62px;bottom:13px}
+#teamSelection{left:519px;top:27px;width:203px}
+#teamSlots .removeTeamMember{display:none}
+#lobbyNotice{left:510px;top:478px;width:205px}
+#startCpuButton,#privateMatch{top:225px}
+#startCpuButton{left:326px}
+#privateMatch{left:531px}
+.rosterPager{position:absolute;inset:0;pointer-events:none}
+.rosterPager button{position:absolute;top:76px;border:0;background:transparent;color:white;text-shadow:1px 1px 2px #20170b,-1px -1px 2px #20170b;font:bold 29px Georgia;pointer-events:auto;padding:0}
+.rosterPager button:first-child{left:32px}
+.rosterPager button:last-child{left:478px}
+.rosterPager button:disabled{visibility:hidden}
+#characterPreview{box-sizing:border-box;left:108px;top:-7px;width:609px;height:224px;border:8px solid #a12715;padding:0;background:#f3e7bd url('/assets/bg/scroll.jpg') center/100% 100%;color:#191308;animation:openScroll .17s ease-out}
+@keyframes openScroll{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0)}}
+#previewName{left:17px;top:4px;font-size:14px;margin:0}
+#previewPortrait{left:17px;top:25px;width:78px;height:78px}
+#previewSkills{left:155px;top:25px;gap:13px}
+#previewSkills button{width:78px;height:78px;padding:0;border-color:#2d2011}
+#previewSkills img{width:100%;height:100%}
+#previewSkills button::after{display:none}
+#previewDescription{left:18px;right:151px;top:114px;bottom:14px}
+#previewDescription h3{margin:0;font-size:13px}
+#previewDescription p{font-size:10px;line-height:1.25;max-height:none}
+.profileTechniqueArt{position:absolute;right:65px;top:114px;width:78px;height:78px;object-fit:cover;border:1px solid #25190d}
+#previewRole{display:none}
+#addPreview{top:auto;bottom:8px;right:47px;font-size:7px}
+#closeCharacterPreview{top:-9px;bottom:-9px;right:-7px;width:45px;border:2px solid #471c10;border-radius:32% 32% 27% 27% / 4% 4% 4% 4%;background:linear-gradient(#9d2115 0 8%,transparent 8% 91%,#a42b17 91%),linear-gradient(90deg,#12291c,#588244 52%,#21391e)!important}
+#lobbyBottom::before{display:block;left:0;top:-5px;bottom:-5px;width:42px;z-index:1}
+.rosterPager{z-index:2}
+.rosterPager button:first-child{left:33px}
+.rosterPager button:last-child{left:491px}
+#rosterFilters{position:absolute}
+#previewName{position:absolute}
+#teamSlots .teamSlot{width:52px;height:51px}
+#teamSlots .teamSlot button[data-team-character]{display:block;width:52px!important;height:51px!important;padding:0;background:#39271a;border:1px solid #2f271d}
+#teamSlots .teamSlot button[data-team-character] img{display:block;width:50px;height:49px;margin:0;object-fit:cover}
+#addPreview{display:none}
+#lobbyNotice{top:482px}
+.inLobby:has(#characterPreview:not([hidden])) .arenaBanner{display:flex}
+.inLobby:has(#characterPreview:not([hidden])) .arenaBanner h1{visibility:hidden}
+#characterPreview{z-index:1}
+
+/* Keep the battle frame thin and the artwork inside each slot. */
+.skills,#details,.bottomTools,#paymentPanel,#resultScroll{
+ box-sizing:border-box;border:3px solid #9d2e1d;
+ background:#eee3bf url('/assets/bg/paper.jpg') center;
+ box-shadow:inset 0 0 0 1px #633d28;
+}
+.skills{gap:6px;padding:7px 10px}
+.skills .skill,.skills .preparedAction{width:56px;height:56px;flex:0 0 56px;overflow:hidden;padding:0;border:1px solid #281d13}
+.skills img,.skills .preparedAction img{display:block;width:100%;height:100%;object-fit:cover}
+#details{width:516px}
+#details .detailIcon{object-fit:cover}
+.miniEffects{max-width:245px;overflow:hidden}
+#enemies .statusRow{overflow:visible}
+#enemies .effectIcon{width:21px;height:21px;flex-basis:21px}
+.effectTip{position:fixed;z-index:10000;width:min(270px,calc(100vw - 16px));padding:8px 10px;background:#f6ebcb;color:#27180e;border:1px solid #573d23;box-shadow:2px 3px 8px #0006;font:12px/1.3 Arial,sans-serif;pointer-events:none}
+.effectTip strong,.effectTip small{color:#9a2719}
+.effectTip p{margin:4px 0}
+.sandboxLink{align-self:center;color:#f9edd1;background:#1a2636;border:1px solid #a99b7d;border-radius:12px;padding:3px 7px;font-size:9px;text-decoration:none}
+#ninjaRank{display:block;width:112px;margin:2px 0;font:inherit;color:#231b11;background:#f5ebcc;border:1px solid #9b8256}
+.portraitBlock{position:relative}
+.rankBadge{position:absolute;z-index:2;left:-8px;top:-16px;display:block;width:39px;height:32px;object-fit:contain;pointer-events:none}
+
+
+/* Compact roster and legible descriptions. */
+#lobbyRoster .rosterVacancy{background:#ded5ae!important;border:1px solid #b3a47e!important;box-shadow:none!important;cursor:default;pointer-events:none}
+#lobbyRoster .rosterVacancy img,#lobbyRoster .rosterVacancy b{visibility:hidden}
+#teamSlots{gap:7px;align-items:start}
+#teamSlots .teamSlot,#teamSlots .emptySlot{width:45px!important;height:45px!important;flex:0 0 45px}
+#teamSlots .teamSlot button[data-team-character]{width:45px!important;height:45px!important;overflow:hidden}
+#teamSlots .teamSlot button[data-team-character] img{width:43px!important;height:43px!important;display:block}
+#teamSlots .removeTeamMember{display:none!important}
+#characterPreview{border-width:3px}
+#previewDescription p,#details p{font-family:'Arial Narrow',Arial,sans-serif;font-size:11px;line-height:1.35}
+#previewDescription h3,#details h2{font-family:'Arial Narrow',Arial,sans-serif;font-weight:700}
+#previewDescription{right:151px;overflow:auto}
+#previewDescription .menuCosts{display:flex;gap:3px;align-items:center}
+#previewDescription .menuCosts .orb{width:9px;height:9px;flex:0 0 9px}
+.portrait{position:relative;z-index:2;overflow:hidden}
+.portraitBlock .hp{position:relative;z-index:2}
+.skill::after,.skill::before,#previewSkills button::after{display:none!important;content:none!important}
+.skill .classIcon,.skill .skillClass,.skill .energyMark{display:none!important}
+#previewSkills button,.profileTechniqueArt,#previewPortrait,.detailIcon{overflow:hidden}
+#previewSkills button.active{outline:1px solid #a78338;outline-offset:2px}
+.skillClasses{display:block;font:8px/1.3 'Arial Narrow',Arial,sans-serif;color:#6c5935;margin-top:8px;max-width:380px}
+#details .skillClasses{position:absolute;bottom:8px;left:83px;margin:0}
+#formToggle{position:absolute;top:5px;right:52px;border:0;border-radius:50%;background:#b62622;color:#fff;font-size:12px;width:21px;height:21px;padding:0}
+#previewDescription{bottom:5px}
+@font-face{font-family:ArenaCondensed;src:url('/assets/fonts/RobotoCondensed.ttf') format('truetype');font-weight:100 900;font-display:swap}
+#previewDescription p,#details p{font-family:ArenaCondensed,'Arial Narrow',Arial,sans-serif;font-weight:600;text-transform:uppercase;font-size:10px;line-height:1.25}
+#previewName,#previewDescription h3,#details h2{font-family:ArenaCondensed,'Arial Narrow',Arial,sans-serif;font-stretch:condensed;text-transform:uppercase;color:#b51914}
+.skillClasses,#details .skillClasses{font-family:ArenaCondensed,'Arial Narrow',Arial,sans-serif;font-weight:400;font-size:8px;color:#81775e;text-transform:uppercase}
+#previewDescription>.skillClasses{position:sticky;bottom:0;background:#f3e7bd;padding:3px 0;margin-top:8px}
+.termDamage{color:#e64c08}.termStun{color:#159f56;text-decoration:underline}.termDefense{color:#128eab;text-decoration:underline}.termTechnique,.termChakra{color:#b22aaa;text-decoration:underline}
+#previewDescription{padding-bottom:17px}
+#previewDescription>p{max-height:53px;overflow:auto;margin:3px 0 0}
+#previewDescription>.skillClasses{position:absolute;left:0;bottom:0;margin:0;padding:0;background:transparent}
+#previewDescription .menuCosts{position:absolute;right:0;top:0;font:8px ArenaCondensed,Arial,sans-serif}
+#previewDescription h3{padding-right:125px}
+#previewDescription .menuCooldown{position:absolute;bottom:0;right:0;color:#81775e;font:8px ArenaCondensed,Arial,sans-serif}
+/* Paper without the red frame baked into scroll.jpg. The frame is now CSS only. */
+#characterPreview{
+ border:1px solid #954731;
+ background:#f2e7c5 url('/assets/bg/paper.jpg') center/256px 256px repeat;
+ box-shadow:inset 0 0 0 1px #dfc58d,0 3px 8px #25140655;
+ overflow:visible;
+ transform-origin:left center;
+ animation:unrollPaper .42s cubic-bezier(.18,.72,.22,1) both;
+}
+#characterPreview::before{
+ content:'';position:absolute;inset:0;pointer-events:none;z-index:-1;
+ background:linear-gradient(90deg,#bb995b25,transparent 9%,transparent 90%,#86603225);
+}
+#previewName{top:7px}
+#previewDescription{top:116px;bottom:12px;padding:0 0 16px;overflow:hidden}
+#previewDescription>p{max-height:55px;overflow:auto;scrollbar-width:thin}
+#previewDescription>.skillClasses{position:absolute;bottom:0;left:0;line-height:11px;background:transparent;max-width:100%;padding:0}
+#closeCharacterPreview{
+ top:-3px;bottom:-3px;right:-3px;width:40px;border:1px solid #775b37;
+ border-radius:9px/4px;
+ box-shadow:-3px 0 5px #3b271936,inset 1px 0 #adc17e55;
+ background:linear-gradient(#873b24 0 6%,transparent 6% 94%,#873b24 94%),linear-gradient(90deg,#23351c,#64834a 45%,#24391f)!important;
+}
+@keyframes unrollPaper{
+ 0%{clip-path:inset(-8px 94% -8px -8px);transform:translateX(-5px) scaleX(.985);filter:brightness(.86)}
+ 65%{clip-path:inset(-8px 2% -8px -8px);transform:translateX(1px) scaleX(1.003);filter:brightness(1.025)}
+ 100%{clip-path:inset(-8px);transform:none;filter:none}
+}
+@media(prefers-reduced-motion:reduce){#characterPreview{animation:none}}
+/* Classic-size viewport, rank overlays and chakra sheet. */
+#arena,#arena *{cursor:url('/assets/cursor/kunai.svg') 2 2,auto!important}
+#arena input[type=search],#arena input[type=text],#arena textarea{cursor:text!important}
+.rankBadge{width:94px;height:118px;left:-24px;top:-24px;object-fit:contain;transform:none;z-index:4;pointer-events:none;max-width:none;max-height:none}
+#characterPreview{animation-duration:.24s}
+#paymentPanel{width:338px;min-height:218px;margin-left:32px;padding:17px 23px 12px 33px;border:2px solid #9e2919;background:#f3e7bd url('/assets/bg/scroll.jpg') center/100% 100%;box-shadow:0 3px 8px #20160955;color:#171309}
+#paymentPanel .scrollBinding{left:-36px;top:-10px;bottom:-10px;width:42px;border:1px solid #382915;border-top:11px solid #a42616;border-bottom:11px solid #a42616;border-radius:42% 42% 36% 36% / 4% 4% 4% 4%;background:linear-gradient(90deg,#19351d,#68864a 48%,#243d22)!important;box-shadow:2px 0 3px #1a1b1260}
+#paymentPanel .scrollBinding::after{content:' spiral ';font-size:0;position:absolute;inset:38% 8px auto;height:24px;background:transparent;border:2px solid #203e20;border-radius:50%;transform:rotate(-25deg);opacity:.65}
+#paymentPanel .scrollBinding::before{content:'';position:absolute;width:10px;height:10px;top:43%;left:14px;border:2px solid #203e20;border-radius:50%;background:transparent!important;opacity:.65}
+#paymentTitle{font:700 13px/1.2 ArenaCondensed,'Arial Narrow',Arial,sans-serif;margin:1px 0 14px}
+#paymentNotice[hidden]{display:none!important}
+.paymentHeader{font:700 10px ArenaCondensed,Arial,sans-serif;margin-bottom:5px}
+.paymentHeader span:last-child{padding-left:12px}
+.paymentRow{grid-template-columns:1fr 18px 19px 19px 1fr 18px;min-height:18px}
+.paymentRow .kind{font:600 9px ArenaCondensed,Arial,sans-serif;gap:4px}
+.paymentRow .rightKind{padding-left:6px}
+.paymentRow .orb{width:9px;height:9px}
+.paymentRow .leftNum,.paymentRow .spentNum{font:11px ArenaCondensed,Arial,sans-serif}
+.paymentRow button{width:19px;height:18px;font-size:18px;line-height:16px}
+#paymentSkills{padding:12px 0 0;min-height:42px;gap:8px;align-items:start}
+#paymentSkills::before{content:none!important;display:none!important}
+#paymentSkills .queueSkill{display:block;position:relative;flex:0 0 30px;padding:0;transition:transform .12s,opacity .12s}
+#paymentSkills .queueSkill>b,#paymentSkills .queueSkill>div{display:none!important}
+#paymentSkills .queueSkill>img{display:block;width:30px;height:30px;object-fit:cover;border:1px solid #342b1b;margin:0}
+#paymentSkills .queueSkill.dragging{opacity:.35;transform:scale(.94)}
+.paymentActions{gap:26px;margin-top:13px}
+.paymentActions button{min-width:78px;height:27px;font:700 14px ArenaCondensed,Arial,sans-serif;padding:0 9px}
+.portraitBlock{isolation:isolate;overflow:visible}
+.portraitBlock>.rankBadge{position:absolute;width:auto;height:118px;left:-24px;top:-24px;z-index:10;transform:none;pointer-events:none}
+#previewDescription .menuCosts{position:absolute;top:0;right:0;display:flex;align-items:center;gap:3px;color:#81775e;font:8px ArenaCondensed,Arial,sans-serif}
+#previewDescription .menuCosts::before{content:'ENERGIA:';margin-right:2px}
+#previewDescription .menuCooldown{position:absolute;top:auto;bottom:0;right:0;margin:0;color:#81775e;font:8px/11px ArenaCondensed,Arial,sans-serif}
+#previewDescription>.skillClasses{max-width:calc(100% - 95px)}
+#details .recharge{top:auto;bottom:8px;right:12px;color:#81775e;font:8px/11px ArenaCondensed,Arial,sans-serif}
+#details .costs{top:10px;right:13px;bottom:auto}
+.skills .skill,.skills .preparedAction{border:1px solid #281d13;box-shadow:none}
+.skills .skill img,.skills .preparedAction img{padding:0}
+.skills .skill.active,.skills .skill:not(:disabled):hover,.skills .preparedAction:has(img){outline-width:1px;outline-offset:0}

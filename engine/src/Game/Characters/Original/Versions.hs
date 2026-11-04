@@ -1,0 +1,302 @@
+{-# OPTIONS_HADDOCK hide #-}
+{-# LANGUAGE OverloadedLists #-}
+
+module Game.Characters.Original.Versions (characters) where
+
+import Game.Characters.Import
+
+import qualified Game.Model.Skill as Skill
+
+characters :: [Category -> Text -> Character]
+characters =
+  [ Character
+    "One-Tailed Naruto" 0
+    "Naruto's anger and desperation has forced the nine-tailed beast's power to surface, unleashing Kurama's animalistic fury and boundless chakra. Overflowing with undirected power that could heal or destroy, Naruto has a choice to make: will he protect himself and stay in control, or give in to the beast within?"
+    [LeafVillage, Eleven, Genin, Jinchuriki, Sage, Sensor, Wind, Lightning, Earth, Water, Fire, Yin, Yang, Uzumaki]
+    [ [ Skill.new
+        { Skill.name      = "Tailed Beast Rasengan"
+        , Skill.desc      = "Naruto slams an orb of supercharged chakra into an enemy, dealing 35 damage, stunning them for a turn, and losing 5 health from the backlash. Deals 10 additional damage during [Tailed Beast Chakra Arms], or 10 fewer damage during [Inner Chakra Mode]."
+        , Skill.classes   = [Chakra, Melee]
+        , Skill.cost      = [Nin, Rand]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To Enemy do
+                apply 1 skillName [Stun All]
+                arms  <- 10 `bonusIf` channeling "Tailed Beast Chakra Arms"
+                inner <- -10 `bonusIf` channeling "Inner Chakra Mode"
+                damage (35 + arms + inner)
+          , To Self $ sacrifice 0 5
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Tailed Beast Chakra Arms"
+        , Skill.desc      = "Naruto unleashes his tailed-beast chakra, dealing 15 damage to all enemies for 3 turns. Cannot be used during [Inner Chakra Mode]."
+        , Skill.require   = [UserChannel False "Inner Chakra Mode"]
+        , Skill.classes   = [Chakra, Melee]
+        , Skill.cost      = [Blood, Tai]
+        , Skill.cooldown  = 3
+        , Skill.dur       = Action 3
+        , Skill.effects   =
+          [ To Enemies $ damage 15 ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Inner Chakra Mode"
+        , Skill.desc      = "Naruto draws in his tailed-beast chakra, gaining 10 points of damage reduction and restoring 15 health for 5 turns. Cannot be used during [Tailed Beast Chakra Arms]."
+        , Skill.require   = [UserChannel False "Tailed Beast Chakra Arms"]
+        , Skill.classes   = [Chakra]
+        , Skill.cost      = [Blood, Rand]
+        , Skill.cooldown  = 5
+        , Skill.dur       = Action 5
+        , Skill.effects   =
+          [ To Self do
+                heal 15
+                apply 1 skillName [Reduce [All] Flat 10]
+          ]
+        }
+      ]
+    , [ invuln "Dodge" "Naruto" [Physical] ]
+    ]
+  , Character
+    "Curse Mark Sasuke" 0
+    "Having acclimated to his Curse Mark, Sasuke draws Orochimaru's vile chakra through it to grow stronger and more monstrous. His powers have grown exponentially, allowing him to pierce or trap enemies with his corrupted chakra."
+    [LeafVillage, Genin, Lightning, Fire, Wind, Earth, Water, Yin, Uchiha]
+    [ [ Skill.new
+        { Skill.name      = "Chidori"
+        , Skill.desc      = "Mixing a Chidori with his corrupt chakra, Sasuke deals 45 piercing damage to an enemy. Corruption enfeebles the target for 2 turns, weakening their damage by 20. Costs [r] during [Curse Mark]."
+        , Skill.classes   = [Bane, Chakra, Melee]
+        , Skill.cost      = [Nin, Nin]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To Enemy do
+                pierce 45
+                apply 2 skillName [Weaken [All] Flat 20]
+          ]
+        , Skill.changes   = changeWith "Curse Mark" $ setCost [Rand]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Dark Void"
+        , Skill.desc      = "Corrupt chakra engulfs an enemy, stunning them for 2 turns. While active, the target is invulnerable to both enemies and allies. When this skill ends, the enemy receives 55 damage. Costs [r][r] during [Curse Mark]."
+        , Skill.classes   = [Bane, Chakra, Ranged, Soulbound]
+        , Skill.cost      = [Nin, Nin, Rand]
+        , Skill.cooldown  = 5
+        , Skill.dur       = Ongoing 2
+        , Skill.effects   =
+          [ To Enemy $ apply 1 skillName
+                [ Stun All
+                , Alone
+                , Invulnerable All
+                ]
+          ]
+        , Skill.end       =
+          [ To Enemy $ damage 55 ]
+        , Skill.changes   = changeWith "Curse Mark" $ setCost [Rand, Rand]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Curse Mark"
+        , Skill.desc      = "Sasuke taps into the power of Orochimaru's curse mark, losing 20 health and becoming invulnerable to all skills for 1 turn."
+        , Skill.cost      = [Blood]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To Self do
+                  sacrifice 0 20
+                  apply 1 skillName [Invulnerable All]
+          ]
+        }
+      ]
+    , [ invuln "Sharingan Foresight" "Sasuke" [Mental] ]
+    ]
+  , Character
+    "Drunken Lee" 0
+    "Accidentally drinking sake has awakened Lee's hidden Drunken Fist powers, completely changing his fighting style. Lee's strength increases the longer he fights, though he is too drunk to focus his attacks on a single opponent."
+    [LeafVillage, Eleven, Genin]
+    [ [ Skill.new
+        { Skill.name      = "Unpredictable Assault"
+        , Skill.desc      = "Lee lashes out drunkenly, dealing 20 damage to a random enemy. Every time this skill is used, its damage increases by 5. During [Drunken Fist], targets a specific enemy and deals 5 additional damage."
+        , Skill.classes   = [Physical, Melee, Uncounterable]
+        , Skill.cost      = [Tai]
+        , Skill.effects   =
+          [ To REnemy do
+                bonus <- 5 `bonusPer` user amount skillName
+                damage (20 + bonus)
+          , To Self $ addStack skillName
+          ]
+        , Skill.changes   = changeWithChannel "Drunken Fist" \x -> x
+                { Skill.effects =
+                  [ To Enemy do
+                        stacks <- user amount skillName
+                        damage (25 + 5 * stacks)
+                    , To Self $ addStack skillName
+                  ]
+                }
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Drunken Counter"
+        , Skill.desc      = "Lee targets himself or an ally. The first physical skill an enemy uses on the target next turn will be countered, and Lee will instantly strike the person countered with [Unpredictable Assault]."
+        , Skill.classes   = [Physical, Melee, Unreflectable]
+        , Skill.cost      = [Rand]
+        , Skill.cooldown  = 2
+        , Skill.effects   =
+          [ To Ally $ trapFrom 1 skillName (Counter Physical) do
+                bonus <- 5 `bonusPer` user amount "Unpredictable Assault"
+                damage (20 + bonus)
+                targeting Self $ addStack "Unpredictable Assault"
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Drunken Fist"
+        , Skill.desc      = "Lee assumes the Drunken Fist stance and deals 15 damage to an enemy for 3 turns, ignoring harmful non-damaging status effects."
+        , Skill.classes   = [Physical, Melee]
+        , Skill.cost      = [Rand, Rand]
+        , Skill.cooldown  = 3
+        , Skill.dur       = Action 3
+        , Skill.effects   =
+          [ To Self $ apply 1 skillName [Enrage]
+          , To Enemy $ damage 15
+          ]
+        }
+      ]
+    , [ invuln "Dodge" "Lee" [Physical] ]
+    ]
+  , Character
+    "Shukaku Gaara" 0
+    "Gaara has spent his whole life struggling to contain Shukaku, the one-tailed beast, within himself. As his will fades and sleep rushes to claim him, Shukaku gleefully takes over, eager to wreak havoc."
+    [SandVillage, Genin, Jinchuriki, Sensor, Wind, Earth, Lightning, SandClan]
+    [ [ Skill.new
+        { Skill.name      = "Desert Hand"
+        , Skill.desc      = "Shukaku attacks with a claw of dense sand, dealing 30 damage to an enemy and gaining 10 permanent destructible defense. Costs [b] during [Tailed Beast Form]."
+        , Skill.classes   = [Physical, Melee]
+        , Skill.cost      = [Blood, Rand]
+        , Skill.effects   =
+          [ To Enemy $ damage 30
+          , To Self $ defend Permanent 10
+          ]
+        , Skill.changes   = changeWith "Tailed Beast Form" $ setCost [Blood]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Monstrous Sand Arm"
+        , Skill.desc      = "Shukaku squeezes an enemy in a fist of sand, dealing 10 damage to them every turn. If they use a skill, the skill will be countered and this effect will end. During [Tailed Beast Form], this skill becomes [Wind Bullet][b][b]."
+        , Skill.require   = [UserChannel False skillName]
+        , Skill.classes   = [Physical, Melee]
+        , Skill.cost      = [Blood]
+        , Skill.cooldown  = 2
+        , Skill.dur       = Control Permanent
+        , Skill.start     =
+          [ To Enemy $ controlTrap Nullified $
+                cancelChannel skillName
+          ]
+        , Skill.effects   =
+          [ To Enemy $ damage 10 ]
+        }
+      , Skill.new
+        { Skill.name      = "Wind Bullet"
+        , Skill.desc      = "Shukaku fires a sphere of wind like a canonball that deals 60 damage to an enemy."
+        , Skill.classes   = [Physical, Ranged]
+        , Skill.cost      = [Blood, Blood]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To Enemy $ damage 60 ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Sand Transformation"
+        , Skill.desc      = "Shukaku gradually accumulates sand around Gaara's body, gaining 10 permanent destructible defense every turn for 5 turns. When this skill ends, Shukaku enters Tailed Beast Form for 3 turns. During [Tailed Beast Form], this skill becomes [Shukaku Full Release][b]."
+        , Skill.require   = [UserChannel False skillName]
+        , Skill.classes   = [Mental]
+        , Skill.cost      = [Rand, Rand]
+        , Skill.cooldown  = 6
+        , Skill.dur       = Ongoing -5
+        , Skill.effects   =
+          [ To Self $ defend Permanent 10 ]
+        , Skill.end       =
+          [ To Self $ apply 3 "Tailed Beast Form"
+                [ Face
+                , Alternate "Monstrous Sand Arm"
+                            "Wind Bullet"
+                , Alternate "Sand Transformation"
+                            "Shukaku Full Release"
+                ]
+          ]
+        }
+      , Skill.new
+        { Skill.name      = "Shukaku Full Release"
+        , Skill.desc      = "Shukaku unleashes the full extent of its power, doubling its damage for 1 turn."
+        , Skill.classes   = [Mental, Unremovable]
+        , Skill.cost      = [Blood]
+        , Skill.effects   =
+          [ To Self $ apply 1 skillName [Strengthen [All] Percent 100] ]
+        }
+      ]
+    , [ invuln "Thick Sand Coat" "Shukaku" [Physical] ]
+    ]
+  , Character
+    "Rehabilitated Gaara" 0
+    "Following his fateful encounter with Naruto, Gaara has become a kind and loyal friend. The sand that was once an extension of his fear and rage has become a versatile tool for shaping the battlefield."
+    [SandVillage, Genin, Jinchuriki, Wind, Earth, Lightning, SandClan]
+    [ [ Skill.new
+        { Skill.name      = "Sand Shower"
+        , Skill.desc      = "A stream of sand flows around Gaara toward an enemy, providing him with 35 destructible defense for 3 turns and dealing 15 damage to the target each turn."
+        , Skill.classes   = [Physical, Ranged]
+        , Skill.cost      = [Rand, Rand]
+        , Skill.cooldown  = 3
+        , Skill.dur       = Action 3
+        , Skill.start     =
+          [ To Self $ defend 3 35 ]
+        , Skill.effects   =
+          [ To Enemy $ damage 15 ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Sand Burial Prison"
+        , Skill.desc      = "Gaara traps all enemies in a sinking pit of sand, increasing the costs of their non-mental skills by 1 arbitrary chakra for 1 turn. This skill becomes [Giant Sand Burial][n][n] the following turn unless an enemy uses a non-mental skill next turn."
+        , Skill.classes   = [Physical, Ranged, Unreflectable]
+        , Skill.cost      = [Nin]
+        , Skill.effects   =
+        [ To Self $ apply 1 skillName
+                [ Alternate "Sand Burial Prison"
+                            "Giant Sand Burial"
+                ]
+        , To Enemies do
+                apply 1 skillName [Exhaust [NonMental]]
+                trap 1 skillName (OnAction NonMental) $
+                    targeting Everyone do
+                        remove skillName
+                        removeTrap skillName
+          ]
+        }
+      , Skill.new
+        { Skill.name      = "Giant Sand Burial"
+        , Skill.desc      = "Demolishes Gaara's destructible barrier and the destructible defense of enemies affected by [Sand Burial Prison], then deals 40 piercing damage to them."
+        , Skill.classes   = [Physical, Ranged, Unreflectable]
+        , Skill.cost      = [Blood, Nin]
+        , Skill.effects   =
+          [ To Enemies do
+                demolishAll
+                pierce 40
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Sand Tsunami"
+        , Skill.desc      = "Massive waves of sand flood the battlefield. For 4 turns, all enemies take 15 damage, their destructible skills are weakened by 10, and the destructible skills of Gaara's team are increased by 10."
+        , Skill.classes   = [Physical, Ranged]
+        , Skill.cost      = [Nin, Nin]
+        , Skill.cooldown  = 4
+        , Skill.dur       = Action 4
+        , Skill.effects   =
+          [ To Enemies do
+                damage 15
+                apply 1 skillName [Build -10]
+          , To Allies $ apply 1 skillName [Build 10]
+          ]
+        }
+      ]
+    , [ invuln "Shukaku Shield" "Gaara" [Physical] ]
+    ]
+  ]

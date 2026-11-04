@@ -1,0 +1,553 @@
+{-# OPTIONS_HADDOCK hide #-}
+{-# LANGUAGE OverloadedLists #-}
+
+module Game.Characters.Shippuden.Organizations (characters) where
+
+import Game.Characters.Import
+
+import qualified Game.Model.Skill as Skill
+
+characters :: [Category -> Text -> Character]
+characters =
+  [ Character
+    "Shisui Uchiha" 0
+    "An operative of the Hidden Leaf Village, Shisui gained the rare Mangekyō Sharingan after witnessing his friend die on a mission. Known as Shisui the Teleporter for his perfect mastery of the Teleportation Technique, the former jōnin prodigy is compassionate and open-minded to a fault. His signature technique makes him all but impossible to flank and allows him to beleaguer his opponents without leaving himself vulnerable."
+    [LeafVillage, Anbu, TeamLeader, Fire, Wind, Lightning, Yin, Uchiha]
+    [ [ Skill.new
+        { Skill.name      = "Susanoo"
+        , Skill.desc      = "Shisui encases himself in spectral armor that provides him with 45 permanent destructible defense. While Shisui has destructible defense from this skill, he gains a stack of Susanoo every turn and this skill becomes [Tsukumo][b]. Stacks of Susanoo last as long as he has destructible defense from this skill."
+        , Skill.classes   = [Chakra]
+        , Skill.cost      = [Blood]
+        , Skill.cooldown  = 3
+        , Skill.dur       = Passive
+        , Skill.start     =
+          [ To Self do
+                defend' Permanent 45
+                    [ Alternate "Susanoo"
+                                "Tsukumo"
+                    ]
+                onBreak $ cancelChannel skillName
+          ]
+        , Skill.effects   =
+          [ To Self $ addStack skillName ]
+        , Skill.end       =
+          [ To Self $ remove skillName ]
+        }
+      , Skill.new
+        { Skill.name      = "Tsukumo"
+        , Skill.desc      = "Shisui's Susanoo sprays a barrage of needles that deal 15 damage to all enemies and weaken their damage by 5. The weakening effect lasts for as many turns as Shisui has stacks of Susanoo."
+        , Skill.classes   = [Chakra, Ranged]
+        , Skill.cost      = [Blood]
+        , Skill.cooldown  = 2
+        , Skill.effects   =
+          [ To Enemies do
+                damage 15
+                stacks <- user amount "Susanoo"
+                apply (fromIntegral stacks) skillName [Weaken [All] Flat 5]
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Teleportation Technique"
+        , Skill.desc      = "For 2 turns, if an enemy uses a skill on Shisui, he will deal 15 damage to them and become invulnerable for the rest of the turn."
+        , Skill.classes   = [Physical, Invisible]
+        , Skill.cost      = [Rand]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To Self $ trapFrom 2 skillName (CounterAll All) do
+                damage 15
+                targeting Self $ apply 0 skillName [Invulnerable All]
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Kotoamatsukami"
+        , Skill.desc      = "Using his Mangekyō Sharingan, Shisui traps an enemy in a powerful genjutsu. The next time they use a skill, their team will lose 1 random chakra. Until they use a skill, Shisui can use this skill with no chakra cost to transfer Kotoamatsukami to a different enemy."
+        , Skill.classes   = [Mental, Ranged, Invisible, Unremovable, Unreflectable]
+        , Skill.cost      = [Blood, Gen]
+        , Skill.effects   =
+          [ To Enemy do
+                let resetter = "Reset Kotoamatsukami"
+                targeting Everyone $ removeTrap skillName
+                targeting Self $ hide Permanent skillName []
+                bombWith [Hidden] Permanent resetter
+                    []
+                    [ To Done $ targeting Self $ remove "kotoamatsukami" ]
+                trap Permanent skillName (OnAction All) do
+                    removeTrap skillName
+                    remove resetter
+                    deplete 1
+          ]
+        , Skill.changes    = changeWith "kotoamatsukami" $ setCost []
+        }
+      ]
+    , [ invuln "Block" "Shisui" [Physical] ]
+    ]
+  , Character
+    "Yamato" 0
+    "An operative of the Hidden Leaf Village's elite Root division, Yamato has had many identities, also going by the names Kinoe and Tenzō. The sole survivor of Orochimaru's horrifying experiments on children, he carries the first Hokage's wood-manipulation abilities along with his DNA. His mastery of power supppression makes him a grave threat against hosts of tailed beasts and others who accumulate power gradually."
+    [LeafVillage, AlliedForces, Anbu, Earth, Water, Yang]
+    [ [ Skill.new
+        { Skill.name      = "Tenth Edict on Enlightenment"
+        , Skill.desc      = "Using the legendary chakra-suppression technique with which Hashirama subdued tailed beasts, Yamato negates all power an enemy has accumulated. They completely reset to their state at the start of the game, except that their health is not restored."
+        , Skill.classes   = [Chakra, Melee]
+        , Skill.cost      = [Blood, Rand]
+        , Skill.charges   = 1
+        , Skill.effects   =
+          [ To Enemy do
+                health <- target health
+                factory
+                setHealth health
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Wood Clone"
+        , Skill.desc      = "Yamato protects himself or an ally with a clone of wood for 1 turn, countering the first non-mental skill an enemy uses on them. If countered, the attacker receives 20 damage and the target gains 20 permanent destructible defense, and [Tenth Edict on Enlightenment] is recharged."
+        , Skill.classes   = [Physical, Melee, Invisible]
+        , Skill.cost      = [Blood]
+        , Skill.cooldown  = 2
+        , Skill.effects   =
+          [ To Ally do
+                trapFrom 1 skillName (Counter NonMental) $ asAction $
+                    damage 20
+                trap 1 skillName (Counter NonMental) do
+                    asAction $ defend Permanent 20
+                    targeting Self $ recharge "Tenth Edict on Enlightenment"
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Four-Pillar Architecture"
+        , Skill.desc      = "If used on an ally, a wooden house rises from the ground around Yamato's team and provides all of them with 20 permanent destructible defense. If used on an enemy, a wooden prison rises from the ground around the enemy team and applies 20 permanent destructible barrier to all of them. Recharges [Tenth Edict on Enlightenment]."
+        , Skill.classes   = [Chakra, Ranged, Bypassing]
+        , Skill.cost      = [Blood, Nin]
+        , Skill.cooldown  = 4
+        , Skill.effects   =
+          [ To Self $ recharge "Tenth Edict on Enlightenment"
+          , To XAlly $ targeting Allies $ asAction $ defend Permanent 20
+          , To Enemy $ targeting Enemies $ asAction $ barricade Permanent 20
+          ]
+        }
+      ]
+    , [ invuln "Wood Wall" "Yamato" [Physical] ]
+    ]
+  , Character
+    "Torune Aburame" 0
+    "An operative of the Hidden Leaf Village's elite Root division, Torune was born with rare venom-resistant antibodies that allow him to carry the Aburame clan's most dangerous species of beetle. The venomous beetles cover his skin like armor, protecting him and infesting anyone who dares to touch him."
+    [LeafVillage, Anbu, Aburame]
+    let
+        applyVenomousBeetle :: SkillEffect
+        applyVenomousBeetle = apply 5 "Venomous Beetle" [Afflict 5]
+
+        applyBeetleDefense :: Int -> SkillEffect
+        applyBeetleDefense i = unlessM (user has' defense skillName) do
+            defend Permanent i
+            onBreakFrom applyVenomousBeetle
+    in
+    [ [ Skill.new
+        { Skill.name      = "Nano-Sized Venomous Beetles"
+        , Skill.desc      = "Torune applies a Venomous Beetle to an enemy, which deals 5 affliction damage for 5 turns. Torune gains 15 permanent destructible defense. Whoever destroys Torune's destructible defense from this skill will have a Venomous Beetle applied to them. While Torune has destructible defense from this skill, this skill costs [r] but does not provide any destructible defense."
+        , Skill.classes   = [Bane, Melee]
+        , Skill.cost      = [Blood]
+        , Skill.effects   =
+          [ To Enemy applyVenomousBeetle
+          , To Self $ applyBeetleDefense 15
+          ]
+        , Skill.changes   = changeWithDefense "Nano-Sized Venomous Beetles"
+                          $ setCost [Rand]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Jar of Poison"
+        , Skill.desc      = "Torune applies a Venomous Beetle to every enemy, which deals 5 affliction damage for 5 turns. Torune gains 30 permanent destructible defense. Whoever destroys his destructible defense from this skill will have a Venomous Beetle applied to them. While Torune has destructible defense from this skill, this skill costs [r][r] but does not provide any destructible defense."
+        , Skill.classes   = [Bane, Melee]
+        , Skill.cost      = [Blood, Blood]
+        , Skill.effects   =
+          [ To Enemies applyVenomousBeetle
+          , To Self $ applyBeetleDefense 30
+          ]
+        , Skill.changes   = changeWithDefense "Jar of Poison"
+                          $ setCost [Rand, Rand]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Venom Explosion"
+        , Skill.desc      = "Torune activates all Venomous Beetles on an enemy, depleting 1 random chakra for each Venomous Beetle."
+        , Skill.require   = [TargetHas AtLeast 1 "Venomous Beetle"]
+        , Skill.classes   = [Bane, Melee]
+        , Skill.cost      = [Blood, Blood, Rand]
+        , Skill.cooldown  = 2
+        , Skill.effects   =
+          [ To Enemy do
+                stacks <- target amount "Venomous Beetle"
+                deplete stacks
+          ]
+        }
+      ]
+    , [ invuln "Dodge" "Torune" [Physical] ]
+    ]
+  , Character
+    "Fū Yamanaka" 0
+    "An operative of the Hidden Leaf Village's elite Root division, Fū is emotionless and ruthlessly straightforward. His only drive is unswerving loyalty to Danzō. His combination of long-distance Yamanaka genjutsu and his personal form of taijutsu makes him a formidable threat in any situation."
+    [LeafVillage, Anbu, Sensor, Yamanaka]
+    [ [ Skill.new
+        { Skill.name      = "Tantō Slash"
+        , Skill.desc      = "Fū slashes an enemy with his tantō, dealing 25 damage. Deals 15 additional damage if the target is affected by [Mind Transfer]. Deals 15 additional damage if the target is affected by [Mind Transfer Puppet Curse]."
+        , Skill.classes   = [Physical, Melee]
+        , Skill.cost      = [Tai]
+        , Skill.effects   =
+          [ To Enemy do
+                bonusA <- 15 `bonusIf` target has "Mind Transfer"
+                bonusB <- 15 `bonusIf` target has "Mind Transfer Puppet Curse"
+                damage (25 + bonusA + bonusB)
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Mind Transfer"
+        , Skill.desc      = "Fū takes over an enemy's mind, making them invulnerable to allies and unable to use skills on allies for 2 turns."
+        , Skill.classes   = [Chakra]
+        , Skill.cost      = [Gen]
+        , Skill.cooldown  = 3
+        , Skill.dur       = Control 2
+        , Skill.start     =
+            [ To Enemy $ control
+                [ Alone
+                , BlockAllies
+                ]
+            ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Mind Transfer Puppet Curse"
+        , Skill.desc      = "Fū defends himself or an ally with a trap that transfers an attacker's mind into a puppet. For 2 turns, the first enemy who uses a non-mental skill on the target will be countered, and their skills will be replaced by [Puppet Curse: Attack][r]."
+        , Skill.classes   = [Mental, Invisible, Unreflectable]
+        , Skill.cost      = [Gen]
+        , Skill.cooldown  = 3
+        , Skill.effects   =
+          [ To Ally $ trapFrom 2 skillName (Counter NonMental) do
+                removeTrap skillName
+                apply -4 skillName [Face]
+                targetNumSkills <- target (length . skills)
+                teach 4 "Puppet Curse: Attack" [0..targetNumSkills]
+          ]
+        }
+      , Skill.new
+        { Skill.name      = "Puppet Curse: Attack"
+        , Skill.desc      = "Trapped in a puppet, little can be done but flail about and hope to hit someone! Deals 15 damage to an enemy."
+        , Skill.classes   = [Physical, Melee]
+        , Skill.cost      = [Rand]
+        , Skill.effects   =
+          [ To Enemy $ damage 15 ]
+        }
+      ]
+    , [ invuln "Dodge" "Fū" [Physical] ]
+    ]
+  , Character
+    "Danzō Shimura" 0
+    "The founder and leader of the Hidden Leaf Village's elite Root division, Danzō has had a hand in almost every important global event since he came to power. He collects Sharingan, implants them in his arm, and uses them to cheat death."
+    [LeafVillage, Anbu, Wind, Earth, Water, Fire, Yin, Yang]
+    [ [ Skill.new
+        { Skill.name      = "Izanagi"
+        , Skill.desc      = "Danzō gains 10 Sharingan and loses 1 every turn. If his health reaches 0, his condition is completely restored to its state at the start of the turn and he loses an extra Sharingan. While active, he can use this skill again with no cost to pause its effect. When he has no Sharingan remaining, this skill becomes [Reverse Tetragram Sealing][r][r][r]."
+        , Skill.classes   = [Mental, Resource, Atemporal]
+        , Skill.cost      = [Blood]
+        , Skill.dur       = Passive
+        , Skill.start     =
+          [ To Self $ applyStacks "Sharingan" 11
+                [ Alternate "Izanagi"
+                            "Izanagi"
+                ]
+          ]
+        , Skill.effects   =
+          [ To Self $ unlessM (user has "paused") do
+                removeStack "Sharingan"
+                anyLeft <- user has "Sharingan"
+                if anyLeft then do
+                    rewind <- user ()
+                    trap 1 skillName Resurrect $
+                        replaceWith rewind
+                else
+                    cancelChannel skillName
+          ]
+        , Skill.end       =
+          [ To Self $ apply Permanent skillName
+                [ Alternate "Izanagi"
+                            "Reverse Tetragram Sealing"
+                ]
+          ]
+        }
+      , Skill.new
+        { Skill.name      = "Izanagi"
+        , Skill.desc      = "Pauses the effect of [Izanagi] for 1 turn."
+        , Skill.classes   = [Mental]
+        , Skill.cost      = [Blood]
+        , Skill.effects   = [ To Self $ flag "paused" ]
+        }
+      , Skill.new
+        { Skill.name      = "Reverse Tetragram Sealing"
+        , Skill.desc      = "Out of options, Danzō seals his enemies and prepares to blow himself up. At the end of the next turn, Danzō will die, as will enemies who are not invulnerable to this skill."
+        , Skill.classes   = [Mental]
+        , Skill.cost      = [Blood, Gen]
+        , Skill.dur       = Action 2
+        , Skill.charges   = 1
+        , Skill.effects   =
+          [ To Self $ whenM (channeling skillName)
+                killHard
+          , To Enemies $ whenM (channeling skillName)
+                kill
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Vacuum Bullets"
+        , Skill.desc      = "Danzō exhales spheres of wind chakra toward an enemy, dealing 10 damage to them and 5 to all other enemies. Once used, this skill becomes [Vacuum Blade][r]."
+        , Skill.classes   = [Chakra, Ranged]
+        , Skill.cost      = [Rand]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To Self $ apply Permanent skillName
+                [ Alternate "Vacuum Bullets"
+                            "Vacuum Blade"
+                ]
+          , To Enemy $ damage 10
+          , To XEnemies $ damage 5
+          ]
+        }
+      , Skill.new
+        { Skill.name      = "Vacuum Blade"
+        , Skill.desc      = "Danzō extends the reach of a kunai by breathing wind chakra onto it and stabs an enemy, dealing 15 damage. Once used, this skill becomes [Vacuum Bullets][r]."
+        , Skill.classes   = [Chakra, Melee]
+        , Skill.cost      = [Rand]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To Self $ remove "Vacuum Bullets"
+          , To Enemy $ damage 15
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Kotoamatsukami"
+        , Skill.desc      = "Danzō infiltrates the mind of an enemy. The next time they use a skill, they will be countered and stunned for 2 turns, and this skill will be replaced by the skill they used for 2 turns. Copied skills cannot copy other skills and do not transform into alternates."
+        , Skill.classes   = [Mental, Ranged, Invisible, Uncounterable, Unreflectable, Bypassing]
+        , Skill.cost      = [Blood, Gen, Gen]
+        , Skill.cooldown  = 9
+        , Skill.effects   =
+          [ To Enemy $ trap 2 skillName Nullified do
+                removeTrap skillName
+                remove skillName
+                asAction $ apply 2 "Kotoamatsukami Stun" [Stun All]
+                copyLast 2
+          ]
+        }
+      ]
+    , [ invuln "Summoning: Baku" "Danzō" [Summon] ]
+    ]
+  , Character
+    "Suigetsu Hōzuki" 0
+    "A member of Sasuke's strike team, Suigetsu is a sadistic murderer from the Hidden Mist Village known as the Second Coming of the Demon for his desire to follow in Zabuza's footsteps. He uses his clan's unique water-manipulation abilities to strengthen and replenish his body, making himself as tough as he is cruel."
+    [MistVillage, Orochimaru, Water, Wind, Hozuki]
+    [ [ Skill.new
+        { Skill.name      = "Great Water Arm"
+        , Skill.desc      = "Suigetsu pumps up his arm with water, gaining 10 destructible defense for 1 turn, and deals 20 damage to an enemy."
+        , Skill.classes   = [Physical, Melee]
+        , Skill.cost      = [Tai]
+        , Skill.effects   =
+          [ To Self $ defend 1 10
+          , To Enemy $ damage 20
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Demon Wave"
+        , Skill.desc      = "A giant wave shaped like a demonic fish crashes into an enemy, dealing 40 piercing damage and providing Suigetsu with 25% damage reduction for 1 turn."
+        , Skill.classes   = [Physical, Ranged]
+        , Skill.cost      = [Nin, Tai]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To Enemy $ pierce 40
+          , To Self $ apply 1 skillName [Reduce [All] Percent 25]
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Liquefy"
+        , Skill.desc      = "Suigetsu transforms his body into water, becoming invulnerable to mental skills for 2 turns. Each turn, he gains a random chakra and 10 permanent destructible defense."
+        , Skill.classes   = [Chakra]
+        , Skill.cost      = [Rand, Rand]
+        , Skill.cooldown  = 4
+        , Skill.dur       = Action 2
+        , Skill.stunned   =
+          [ To Self $ hide 1 skillName [Face] ]
+        , Skill.effects   =
+          [ To Self do
+                apply 1 skillName [Face, Invulnerable Mental]
+                gain [Rand]
+                defend Permanent 10
+          ]
+        }
+      ]
+    , [ invuln "Parry" "Suigetsu" [Physical] ]
+    ]
+  , Character
+    "Karin" 0
+    "A member of Sasuke's strike team, Karin is a genin from the Hidden Grass Village, Karin has the unique ability to sense chakra signatures automatically. She is all but omniscient within her range, able to detect hidden individuals, penetrate illusions, and even tell when someone is lying."
+    [Orochimaru, Genin, Sensor, Earth, Water, Yin, Yang, Uzumaki]
+    [ [ Skill.new
+        { Skill.name     = "Mind's Eye"
+        , Skill.desc     = "Karin uses her chakra detection to predict an enemy's action next turn. If they use a skill on Karin or her allies, it will be countered. If they use a skill on one of their allies, their skill costs will be increased by 1 arbitrary chakra for 3 turns."
+        , Skill.classes  = [Mental, Ranged, Invisible]
+        , Skill.cost     = [Rand]
+        , Skill.cooldown = 2
+        , Skill.effects  =
+          [ To Enemy do
+                trap 1 skillName (Countered All) doNothing
+                trap 1 skillName OnHelp $ asAction $
+                    apply 3 skillName [Exhaust [All]]
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Adamantine Attacking Chains"
+        , Skill.desc      = "Karin attacks an enemy with sealing chains, dealing 30 damage and disabling the stuns and disabling effects of their skills for 1 turn."
+        , Skill.classes   = [Physical, Melee, Bypassing]
+        , Skill.cost      = [Tai, Rand]
+        , Skill.effects   =
+          [ To Enemy do
+                damage 30
+                apply 1 skillName [Disable Stuns]
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Heal Bite"
+        , Skill.desc      = "One of Karin's allies bites her, restoring 30 health to them and causing Karin to lose 5 health."
+        , Skill.classes   = [Chakra]
+        , Skill.cost      = [Blood]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To XAlly $ heal 30
+          , To Self $ sacrifice 0 5
+          ]
+        }
+      ]
+    , [ invuln "Dodge" "Karin" [Physical] ]
+    ]
+  , Character
+    "Jūgo" 0
+    "A member of Sasuke's strike team, Jūgo suffers from uncontrollable fits of rage. In his normal state, he is compassionate and conflict-averse, but in battle his psychotic second nature overtakes him."
+    [Orochimaru, Sage, Wind, Earth, Water, Yang]
+    [ [ Skill.new
+        { Skill.name      = "Piston Fist"
+        , Skill.desc      = "Boosting jets form on the back of Jūgo's and propel his fist into an enemy, dealing 40 damage and stunning their physical and melee skills for 1 turn."
+        , Skill.classes   = [Physical, Melee]
+        , Skill.cost      = [Blood, Tai]
+        , Skill.effects   =
+          [ To Enemy do
+                damage 40
+                apply 1 skillName
+                    [ Stun Physical
+                    , Stun Melee
+                    ]
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Sage Transformation"
+        , Skill.desc      = "Entering a killing rage, Jūgo transforms into a monster, gaining 75% damage reduction and dealing 25 piercing damage to an enemy for 3 turns."
+        , Skill.classes   = [Physical, Melee]
+        , Skill.cost      = [Blood, Blood]
+        , Skill.cooldown  = 4
+        , Skill.dur       = Action 3
+        , Skill.stunned   =
+          [ To Self $ hide 1 skillName [Face] ]
+        , Skill.effects   =
+          [ To Self $ apply 1 skillName [Face, Reduce [All] Percent 75]
+          , To REnemy $ pierce 25
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Cellular Regeneration"
+        , Skill.desc      = "Jūgo transfers his cells to an ally, restoring 20 health to them and providing them with 20 permanent destructible defense. The following 4 turns, Jūgo's cooldowns increase by 1 turn."
+        , Skill.classes   = [Chakra]
+        , Skill.cost      = [Blood, Rand]
+        , Skill.cooldown  = 1
+        , Skill.effects   =
+          [ To XAlly do
+                heal 20
+                defend Permanent 20
+          , To Self $ apply 4 skillName [Snare 1]
+          ]
+        }
+      ]
+    , [ invuln "Hide" "Jūgo" [Mental] ]
+    ]
+  , Character
+    "Sasuke Uchiha" 0
+    "Sasuke's years of training under Orochimaru have made him a master of his elemental aspects. Cold and ruthless, he is regarded as one of the most dangerous ninjas alive."
+    [LeafVillage, Orochimaru, Genin, Rogue, Lightning, Fire, Wind, Earth, Water, Yin, Uchiha]
+    [ [ Skill.new
+        { Skill.name      = "Chidori Stream"
+        , Skill.desc      = "An electric field surrounds Sasuke. Enemies who use non-mental skills on Sasuke next turn will be countered and will take 10 piercing damage. Once used, this skill becomes [Kusanagi][t]."
+        , Skill.classes   = [Bane, Chakra, Melee, Invisible]
+        , Skill.cost      = [Nin, Rand]
+        , Skill.effects   =
+          [ To Self do
+                trapFrom 1 skillName (CounterAll NonMental) $ asAction $
+                    pierce 10
+                apply Permanent skillName
+                    [ Alternate "Chidori Stream"
+                                "Kusanagi"
+                    ]
+          ]
+        }
+      , Skill.new
+        { Skill.name      = "Kusanagi"
+        , Skill.desc      = "Sasuke runs Chidori's electric current through a sword and impales an enemy with it, dealing 15 damage and stunning the target's physical and mental skills for 1 turn. Once used, this skill becomes [Chidori Stream][n][r]."
+        , Skill.classes   = [Bane, Chakra, Melee]
+        , Skill.cost      = [Tai]
+        , Skill.effects   =
+          [ To Enemy do
+                damage 15
+                apply 1 skillName
+                    [ Stun Physical
+                    , Stun Mental
+                    ]
+          , To Self $ remove "Chidori Stream"
+          ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Dragon Flame"
+        , Skill.desc      = "Draconic fireballs sear an enemy, dealing 10 affliction damage to them for 4 turns. Until this skill ends, enemies who use skills on Sasuke will take 5 affliction damage and create a [Thunder Cloud]. Using this skill creates 2 [Thunder Cloud]s."
+        , Skill.classes   = [Bane, Chakra, Ranged]
+        , Skill.cost      = [Nin, Rand]
+        , Skill.cooldown  = 4
+        , Skill.dur       = Action 4
+        , Skill.start     =
+          [ To Self $ addStacks "Thunder Cloud" 2 ]
+        , Skill.always    =
+          [ To Self $ trapFrom 1 skillName (OnHarmed All) do
+                afflict 5
+                targeting Self $ addStack "Thunder Cloud"
+          ]
+        , Skill.effects   =
+          [ To Enemy $ afflict 10 ]
+        }
+      ]
+    , [ Skill.new
+        { Skill.name      = "Kirin"
+        , Skill.desc      = "A pillar of lightning strikes an enemy, dealing 60 piercing damage. Requires 3 [Thunder Cloud]s. Spends all [Thunder Cloud]s."
+        , Skill.require   = [UserHas AtLeast 3 "Thunder Cloud"]
+        , Skill.classes   = [Chakra, Ranged, Bypassing, Uncounterable, Unreflectable]
+        , Skill.effects   =
+          [ To Enemy $ pierce 60
+          , To Self $ remove "Thunder Cloud"
+          ]
+        }
+      ]
+    , [ invuln "Summoning: Serpent" "Sasuke" [Summon] ]
+    ]
+  ]
